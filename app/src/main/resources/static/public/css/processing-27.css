@@ -1,0 +1,170 @@
+.barcode-search {
+	margin-top: 0.8em;
+	margin-right: 1.3em;
+	padding-top: 0.8em;
+}
+
+.logout {
+	margin-top: 0.8em;
+	margin-right: 1.3em;
+}
+
+.logged-in-as {
+	margin-right: 2em;	
+}
+
+.uploadFileType {
+	color: transparent; /* hide the "no file chosen" tooltip as it's confusing*/
+}
+
+.associated-object {
+	min-height: 24em;
+}
+
+.unassign-form {
+ 	margin-top: -2em;
+}
+
+.task-title {
+	min-width: 30em;
+}
+
+.task-title .task-heading {
+	float: none;
+}
+
+.space-left {
+	margin-left: 3rem;
+}
+
+.admin-edit-header {
+	width: 3em;
+}
+
+
+.taskInputDefinitionsGroup {
+	text-align: center;
+}
+.wrappedTitle {
+	margin-left: auto;
+	margin-right: auto;
+}
+.addRemoveControls {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.taskinputdefinitions-radio {
+	padding-left: 0.5em;
+	float: left;
+}
+
+.view-record-header {
+	width: 1px;
+}
+
+.nav_title {
+	height: 3.2em;
+	min-height: 3.2em;
+}
+
+.sidebar-footer a {
+	font-size: 12px;
+}
+
+#template {
+	font-family: monospaced;
+	font-size: 14px;
+}
+
+.recordDetail {
+	font-weight: bold;
+	font-size: 1.2em;
+	border-bottom: 1px solid lightgray;
+}
+.recordDetail a {
+	text-decoration: underline;
+}
+
+.textRecordDetail {
+	white-space: pre-line;
+}
+
+.modal-dialog {
+	width: 75%;
+	margin-left: 20em; /* centre in the main content, rather than the whole page. stops the nav also sitting over the dialog */
+    overflow-y: initial !important
+}
+
+.modal-body-content {
+	overflow-y: hidden;
+}
+
+.modalCalendar-dialog {
+	width: 45%;
+	height: 30em;
+	margin: 20em auto; /* centre in the main content, rather than the whole page. stops the nav also sitting over the dialog */
+    overflow-y: hidden;
+}
+
+.modal-body {
+	padding: 0;
+    max-height: 650px;
+    overflow-y: auto;
+}
+
+#modalTypeHeader {
+	float: left;	
+}
+
+#task-form {
+	top: 0;
+	position: -webkit-sticky; /* Safari */
+	position: sticky;
+}
+
+.recordsViewCell {
+	vertical-align: middle;
+}
+
+#audit-table {
+	width: 100%;
+}
+
+.auditentry thead tr th:nth-of-type(1) {
+	width: 20%;
+}
+.auditentry thead tr th:nth-of-type(2) {
+	width: 40%;
+}
+.auditentry thead tr th:nth-of-type(3) {
+	width: 40%;
+}
+
+.middle-align td {
+	vertical-align: middle !important;/*bootstrap overriding*/
+}
+
+.form-group {
+	margin: 0;
+}
+
+.site_title {
+	font-size: 1.6em;
+}
+
+.btn {
+	min-width: 8em;
+}
+
+.btn-sm {
+	min-width: 2em;
+}
+
+.recordsView-barcode_, .recordsView-lastmodified_, .recordsView-created_, .recordsView-status_ {
+	width: 10em;
+}
+
+#notes-table, #tasks-table {
+	width: 100% !important;
+}

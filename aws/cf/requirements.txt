@@ -1,0 +1,12 @@
+bcdoc==0.12.2
+boto3==0.0.1
+botocore==0.68.0
+certifi==2020.12.5
+chardet==4.0.0
+docutils==0.16
+idna==2.10
+jmespath==0.4.1
+python-dateutil==2.8.1
+requests==2.25.1
+six==1.7.3
+urllib3==1.26.3

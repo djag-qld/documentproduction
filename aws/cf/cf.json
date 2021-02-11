@@ -1,0 +1,670 @@
+{
+	"Description": "Document Production Service",
+	"Parameters": {
+		"VpcParam": {
+			"Type": "AWS::EC2::VPC::Id",
+			"Description": "Choose the VPC ID"
+		},
+		"ASubnetIdParam": {
+			"Type": "AWS::EC2::Subnet::Id",
+			"Description": "Choose the A Subnet ID"
+		},
+		"BSubnetIdParam": {
+			"Type": "AWS::EC2::Subnet::Id",
+			"Description": "Choose the B Subnet ID"
+		},
+		"CSubnetIdParam": {
+			"Type": "AWS::EC2::Subnet::Id",
+			"Description": "Choose the C Subnet ID"
+		},
+		"CASEndpoint": {
+			"Type": "String",
+			"Description": "URL for base of CAS"
+		},
+		"CASRole": {
+			"Type": "String",
+			"Description": "Role required from CAS to access the administration portal"
+		},
+		"HostedZoneId": {
+			"Type": "String",
+			"Description": "Hosted Zone ID of your domain"
+		},
+		"BeanstalkHostedZoneId": {
+			"Type": "String",
+			"Description": "Hosted Zone ID for Beanstalk in your region: https://docs.aws.amazon.com/general/latest/gr/elasticbeanstalk.html"
+		},
+		"SecretAndKMSRoleArn": {
+			"Type": "String",
+			"Description": "Application service role allowing access to SecretManager for database access and KMS keys",
+			"AllowedPattern": "arn:aws:iam::.+:policy/.+"
+		},
+		"DBName": {
+			"Default": "test_dp_db",
+			"Description": "Database name",
+			"Type": "String",
+			"MinLength": "1",
+			"MaxLength": "64"
+		},
+		"ApiDomainNameParam": {
+			"Type": "String",
+			"Description": "API domain name"
+		},
+		"ApiCertificateArnParam": {
+			"Type": "String",
+			"Description": "ARN of API certificate for ApiDomainNameParam",
+			"AllowedPattern": "arn:aws:acm:.+:.+:certificate/.+"
+		},
+		"DomainNameParam": {
+			"Type": "String",
+			"Description": "Domain name for web portal"
+		},
+		"WebPortalCertificateArnParam": {
+			"Type": "String",
+			"Description": "ARN of web portal certificate for DomainNameParam",
+			"AllowedPattern": "arn:aws:acm:.+:.+:certificate/.+"
+		},
+		"S3DeploymentBucketParam": {
+			"Type": "String",
+			"Description": "Bucket containing the S3DeploymentJarParam"
+		},
+		"S3DeploymentJarParam": {
+			"Type": "String",
+			"Description": "Web application JAR"
+		},
+		"WebACLArnParam": {
+			"Type": "String",
+			"Description": "WebACL for WAF",
+			"AllowedPattern": "arn:aws:wafv2:.+:.+:regional/webacl/.+/.+"
+		}
+	},
+	"Resources": {
+		"Application": {
+			"Type": "AWS::ElasticBeanstalk::Application",
+			"Properties": {
+			}
+		},
+		"AppVersion": {
+			"Type": "AWS::ElasticBeanstalk::ApplicationVersion",
+			"Properties": {
+				"ApplicationName": { 
+					"Ref": "Application" 
+				},
+				"SourceBundle": {
+					"S3Bucket": { "Ref": "S3DeploymentBucketParam" },
+					"S3Key": { "Ref": "S3DeploymentJarParam" }
+				}
+			}
+		},
+		"ApplicationEnvironment": {
+			"Type": "AWS::ElasticBeanstalk::Environment",
+			"Properties": {
+				"ApplicationName": {
+					"Ref": "Application"
+				},
+				"SolutionStackName": "64bit Amazon Linux 2018.03 v2.11.2 running Java 8",
+				"VersionLabel": { 
+					"Ref": "AppVersion"
+				},
+				"Tier": {
+					"Name": "WebServer",
+					"Type": "Standard"
+				},
+				"OptionSettings": [
+					{
+						"Namespace": "aws:ec2:vpc",
+						"OptionName": "VPCId",
+						"Value": { "Ref": "VpcParam" }
+					},
+					{
+						"Namespace": "aws:ec2:vpc",
+						"OptionName": "Subnets",
+						"Value" : { "Fn::Join" : [ ",", [ { "Ref": "ASubnetIdParam" }, { "Ref": "BSubnetIdParam"}, { "Ref": "CSubnetIdParam"} ] ] }
+					},
+					{
+						"Namespace": "aws:ec2:vpc",
+						"OptionName": "ELBSubnets",
+						"Value" : { "Fn::Join" : [ ",", [ { "Ref": "ASubnetIdParam" }, { "Ref": "BSubnetIdParam"}, { "Ref": "CSubnetIdParam"} ] ] }
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:command",
+						"OptionName": "DeploymentPolicy",
+						"Value": "Rolling"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:command",
+						"OptionName": "BatchSizeType",
+						"Value": "Percentage"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:command",
+						"OptionName": "BatchSize",
+						"Value": "25"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:environment",
+						"OptionName": "EnvironmentType",
+						"Value": "LoadBalanced"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:environment",
+						"OptionName": "LoadBalancerType",
+						"Value": "application"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:environment:process:default",
+						"OptionName": "StickinessEnabled",
+						"Value": "true"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:healthreporting:system",
+						"OptionName": "SystemType",
+						"Value": "enhanced"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:managedactions",
+						"OptionName": "PreferredStartTime",
+						"Value": "Sun:14:00"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:managedactions:platformupdate",
+						"OptionName": "UpdateLevel",
+						"Value": "minor"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:managedactions",
+						"OptionName": "ManagedActionsEnabled",
+						"Value": "true"
+					},
+					{
+						"Namespace": "aws:elbv2:listener:443",
+						"OptionName": "Protocol",
+						"Value": "HTTPS"
+					},
+					{
+						"Namespace": "aws:elbv2:listener:443",
+						"OptionName": "SSLCertificateArns",
+						"Value": { "Ref": "WebPortalCertificateArnParam" }
+					},
+					{
+						"Namespace": "aws:autoscaling:launchconfiguration",
+						"OptionName": "IamInstanceProfile",
+						"Value": {
+							"Ref": "InstanceProfile"
+						}
+					},
+					{
+						"Namespace": "aws:autoscaling:launchconfiguration",
+						"OptionName": "SecurityGroups",
+						"Value": { "Ref": "sgbeanstalk" }
+					},
+					{
+						"Namespace": "aws:autoscaling:launchconfiguration",
+						"OptionName": "InstanceType",
+						"Value": "t2.micro"
+					},
+					{
+						"Namespace": "aws:autoscaling:updatepolicy:rollingupdate",
+						"OptionName": "RollingUpdateEnabled",
+						"Value": "true"
+					},
+					{
+						"Namespace": "aws:autoscaling:updatepolicy:rollingupdate",
+						"OptionName": "MaxBatchSize",
+						"Value": "1"
+					},
+					{
+						"Namespace": "aws:autoscaling:updatepolicy:rollingupdate",
+						"OptionName": "MinInstancesInService",
+						"Value": "1"
+					},
+					{
+						"Namespace": "aws:autoscaling:updatepolicy:rollingupdate",
+						"OptionName": "RollingUpdateType",
+						"Value": "Health"
+					},
+					{
+						"Namespace": "aws:autoscaling:updatepolicy:rollingupdate",
+						"OptionName": "Timeout",
+						"Value": "PT15M"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:environment",
+						"OptionName": "ServiceRole",
+						"Value": "aws-elasticbeanstalk-service-role"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:application:environment",
+						"OptionName": "RDS_HOSTNAME",
+						"Value": {
+							"Fn::GetAtt": [
+								"Database",
+								"Endpoint.Address"
+							]
+						}
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:environment:process:default",
+						"OptionName": "HealthCheckPath",
+						"Value": "/health/check"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:application:environment",
+						"OptionName": "RDS_PORT",
+						"Value": "5432"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:application:environment",
+						"OptionName": "RDS_DB_NAME",
+						"Value": { "Ref": "DBName" }
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:application:environment",
+						"OptionName": "API_DOMAIN_NAME",
+						"Value": { "Ref": "ApiDomainNameParam" }
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:application:environment",
+						"OptionName": "DOMAIN_NAME",
+						"Value": { "Ref": "DomainNameParam" }
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:application:environment",
+						"OptionName": "CAS_ENDPOINT",
+						"Value": { "Ref": "CASEndpoint" }
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:application:environment",
+						"OptionName": "REGION",
+						"Value": { "Fn::Sub": "${AWS::Region}" }
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:application:environment",
+						"OptionName": "CAS_ROLE",
+						"Value": { "Ref": "CASRole" }
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:application:environment",
+						"OptionName": "SECRET_NAME",
+						"Value": { "Fn::Join": [ "", [ { "Ref": "AWS::StackName" }, "/databases/documentproduction" ] ] }
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
+						"OptionName": "StreamLogs",
+						"Value": "true"
+					}
+				]
+			}
+		},
+		"InstanceProfile": {
+			"Type": "AWS::IAM::InstanceProfile",
+			"Properties": {
+				"Path": "/",
+				"Roles": [
+					{
+						"Ref": "InstanceProfileRole"
+					}
+				]
+			}
+		},
+		"InstanceProfileRole": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Principal": {
+								"Service": "ec2.amazonaws.com"
+							},
+							"Action": [
+								"sts:AssumeRole"
+							]
+						}
+					]
+				},
+				"ManagedPolicyArns": [ 
+					"arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier",
+					{
+						"Ref": "SecretAndKMSRoleArn"
+					}
+				]
+			}
+		},
+		"Database": {
+			"Type": "AWS::RDS::DBInstance",
+			"Properties": {
+				"DBName": {
+					"Ref": "DBName"
+				},
+				"DBInstanceClass": "db.t3.micro",
+				"AllocatedStorage": "10",
+				"Engine": "postgres",
+				"EngineVersion": "9.6.18",
+				"StorageEncrypted": "true",
+				"MasterUsername": {
+					"Fn::Sub": "{{resolve:secretsmanager:${RDSInstanceRotationSecret}::username}}"
+				},
+				"MasterUserPassword": {
+					"Fn::Sub": "{{resolve:secretsmanager:${RDSInstanceRotationSecret}::password}}"
+				},
+				"PubliclyAccessible": "false",
+				"CopyTagsToSnapshot": "true",
+				"VPCSecurityGroups": [ { "Ref": "sgrds" } ]
+			}
+		},
+		"SecretRDSInstanceAttachment": {
+			"Type": "AWS::SecretsManager::SecretTargetAttachment",
+			"Properties": {
+				"SecretId": {
+					"Ref": "RDSInstanceRotationSecret"
+				},
+				"TargetId": {
+					"Ref": "Database"
+				},
+				"TargetType": "AWS::RDS::DBInstance"
+			}
+		},
+		"sgbeanstalk": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "Beanstalk access",
+				"VpcId": {
+					"Ref": "VpcParam"
+				},
+				"SecurityGroupIngress": [
+					{
+						"IpProtocol": "tcp",
+						"FromPort": 80,
+						"ToPort": 80,
+						"CidrIp": "0.0.0.0/0"
+					}
+				]
+			}
+		},
+		"sgrds": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "RDS access",
+				"VpcId": {
+					"Ref": "VpcParam"
+				},
+				"SecurityGroupIngress": [
+					{
+						"IpProtocol": "tcp",
+						"FromPort": 5432,
+						"ToPort": 5432,	
+						"SourceSecurityGroupId": {
+							"Fn::GetAtt": [
+								"sgbeanstalk",
+								"GroupId"
+							]
+						}
+					}
+				]
+			}
+		},
+		"ApiRest": {
+			"Type": "AWS::ApiGateway::RestApi",
+			"Properties": {
+				"Name": { "Fn::Join": [ "", [ { "Ref": "AWS::StackName" }, "api" ] ] }
+			}
+		},
+		"ApiResource": {
+			"Type": "AWS::ApiGateway::Resource",
+			"Properties": {
+				"RestApiId": { "Ref": "ApiRest" },
+				"ParentId": { "Fn::GetAtt": ["ApiRest", "RootResourceId"] },
+				"PathPart": "{proxy+}"
+			}
+		},
+		"ApiResourceMethod": {
+			"Type": "AWS::ApiGateway::Method",
+			"DependsOn": [ "DnsRecord" ],
+			"Properties": {
+				"HttpMethod": "ANY",
+				"RestApiId": { "Ref": "ApiRest" },
+				"ResourceId": { "Ref": "ApiResource" },
+				"AuthorizationType": "NONE",
+				"RequestParameters": {
+					"method.request.path.proxy": "true"
+				},
+				"Integration": {
+					"CacheKeyParameters": [
+						"method.request.path.proxy"
+					],
+					"RequestParameters": {
+						"integration.request.path.proxy": "method.request.path.proxy"
+					},
+					"IntegrationHttpMethod": "ANY",
+					"Type": "HTTP_PROXY",
+					"Uri": { "Fn::Join": [ "", [ "https://", { "Ref": "DomainNameParam" }, "/{proxy}" ] ] }
+				}
+
+			}
+		},
+		"ApiDeployment": {
+			"DependsOn": [
+				"ApiResourceMethod"
+			],
+			"Type": "AWS::ApiGateway::Deployment",
+			"Properties": {
+				"RestApiId": { "Ref": "ApiRest" },
+				"StageName": "all"
+			}
+		},
+		"ApiAssociateWebACL": {
+			"Type": "AWS::WAFv2::WebACLAssociation",
+			"DependsOn": [ "ApiRest", "ApiResource", "ApiResourceMethod", "ApiDeployment" ],
+			"Properties": {
+				"ResourceArn": {
+					"Fn::Sub": "arn:aws:apigateway:${AWS::Region}::/restapis/${ApiRest}/stages/all"
+				},
+				"WebACLArn": { "Ref": "WebACLArnParam" }
+			}
+		},
+		"ApiDomainName": {
+			"Type": "AWS::ApiGateway::DomainName",
+			"DependsOn": [ "ApiRest", "ApiResource", "ApiResourceMethod", "ApiDeployment" ],
+			"Properties": {
+				"RegionalCertificateArn": { "Ref": "ApiCertificateArnParam" },
+				"DomainName": { "Ref": "ApiDomainNameParam" },
+				"EndpointConfiguration": {
+					"Types": [ "REGIONAL" ]
+				},
+				"SecurityPolicy": "TLS_1_2"
+			}
+		},
+		"ApiMapping": {
+			"Type": "AWS::ApiGateway::BasePathMapping",
+			"DependsOn": [ "ApiDomainName" ],
+			"Properties": {
+				"BasePath": "",
+				"DomainName": { "Ref": "ApiDomainName" },
+				"RestApiId": {
+					"Ref": "ApiRest"
+				},
+				"Stage": "all"
+			}
+		},
+		"ApiDnsRecord": {
+			"Type": "AWS::Route53::RecordSetGroup",
+			"Properties": {
+				"HostedZoneId": { "Ref": "HostedZoneId" },
+				"RecordSets": [
+					{
+						"Name": { "Ref": "ApiDomainName" },
+						"Type": "A",
+						"AliasTarget": {
+							"HostedZoneId": {
+								"Fn::GetAtt": [
+									"ApiDomainName",
+									"RegionalHostedZoneId"
+								]
+							},
+							"DNSName": {
+								"Fn::GetAtt": [
+									"ApiDomainName",
+									"RegionalDomainName"
+								]
+							}
+						}
+					}
+				]
+			}
+		},
+		"beanstalktords": {
+			"Type": "AWS::EC2::SecurityGroupEgress",
+			"Properties": {
+				"IpProtocol": "tcp",
+				"FromPort": 5432,
+				"ToPort": 5432,
+				"GroupId": {
+					"Fn::GetAtt": [
+						"sgbeanstalk",
+						"GroupId"
+					]
+				},
+				"DestinationSecurityGroupId": {
+					"Fn::GetAtt": [
+						"sgrds",
+						"GroupId"
+					]
+				}
+			}
+		},
+		"DnsRecord": {
+			"Type": "AWS::Route53::RecordSetGroup",
+			"Properties": {
+				"HostedZoneId": { "Ref": "HostedZoneId" },
+				"RecordSets": [
+					{
+						"Name": { "Ref": "DomainNameParam" },
+						"Type": "A",
+						"AliasTarget": {
+						    "HostedZoneId": { "Ref": "BeanstalkHostedZoneId" },
+							"DNSName": {
+								"Fn::GetAtt": [
+									"ApplicationEnvironment",
+									"EndpointURL"	
+								]
+							}
+						}
+					}
+				]
+			}
+		},
+		"RDSInstanceRotationSecret": {
+			"Type": "AWS::SecretsManager::Secret",
+			"Properties": {
+				"Description": "RDS secret for the Document Production service",
+				"Name": { "Fn::Join": [ "", [ { "Ref": "AWS::StackName" }, "/databases/documentproduction" ] ] },
+				"GenerateSecretString": {
+					"SecretStringTemplate": "{\"username\": \"dpusername\"}",
+					"GenerateStringKey": "password",
+					"PasswordLength": 32,
+					"ExcludeCharacters": "\"@/\\"
+				}
+			}
+		},
+		"RDSInstanceRotationSecretPolicy": {
+			"Type" : "AWS::SecretsManager::ResourcePolicy",
+			"Properties" : {
+				"ResourcePolicy" : {
+					"Version" : "2012-10-17",
+					"Statement" : [
+						{
+							"Effect": "Allow",
+							"Principal": { "AWS": { "Fn::GetAtt": [ "InstanceProfileRole", "Arn" ] } },
+							"Action": [ "secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret" ],
+							"Resource": "*"
+						}
+					]
+				},
+				"SecretId" : { "Ref": "RDSInstanceRotationSecret" }
+			}
+		},
+		"LambdaBasicExecutionRole": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Statement": [{
+						"Effect": "Allow",
+						"Principal": {
+							"Service": "lambda.amazonaws.com"
+						},
+						"Action": "sts:AssumeRole"
+					}]
+				},
+				"Path": "/",
+				"Policies": [{
+					"PolicyName": "DescribeEnvironment",
+					"PolicyDocument": {
+						"Version" : "2012-10-17",
+						"Statement" : [
+							{
+								"Effect": "Allow",
+								"Action": [ "elasticbeanstalk:DescribeEnvironmentResources" ],
+								"Resource": { 
+									"Fn::Sub": "arn:aws:elasticbeanstalk:${AWS::Region}:${AWS::AccountId}:environment/${Application}/${ApplicationEnvironment}"
+								}
+							}
+						]
+					}
+				}],
+				"ManagedPolicyArns": [ 
+					"arn:aws:iam::aws:policy/AmazonEC2FullAccess",
+					"arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole" 
+				]
+			}
+		},
+		"LoadBalancerInfoResource": {
+			"Type": "Custom::GetEBLoadBalancerArn",
+			"Properties": {
+				"ServiceToken": { "Fn::GetAtt": [
+					"LoadBalancerInfoFunction",
+					"Arn"
+				] },
+				"EBEnvName": { "Ref": "ApplicationEnvironment" }
+			}
+		},
+		"LoadBalancerInfoFunction": {
+			"Type": "AWS::Lambda::Function",
+			"Properties": {
+				"Handler": "loadbalancerinfo.lambda_handler",
+				"Description": "Get ARN of EB Load balancer",
+				"Timeout": 30,
+				"Role": { "Fn::GetAtt": [
+					"LambdaBasicExecutionRole",
+					"Arn"
+				] },
+				"Runtime": "python3.7",
+				"Code": {
+					"S3Bucket": { "Ref": "S3DeploymentBucketParam" },
+					"S3Key"	: "LoadBalancerInfoFunction.zip"
+				}
+			}
+		},
+		"ApplicationAssociateWebACL": {
+			"Type": "AWS::WAFv2::WebACLAssociation",
+			"DependsOn": [ "ApplicationEnvironment" ],
+			"Properties": {
+				"ResourceArn": { "Fn::GetAtt": [
+					"LoadBalancerInfoResource",
+					"LBArn"
+				] },
+				"WebACLArn": { "Ref": "WebACLArnParam" }
+			}
+		}
+	},	
+	"Outputs": {
+		"RDSEndpoint": {
+			"Value": {
+				"Fn::GetAtt": [
+					"Database",
+					"Endpoint.Address"
+				]
+			}
+		}
+	}
+}
