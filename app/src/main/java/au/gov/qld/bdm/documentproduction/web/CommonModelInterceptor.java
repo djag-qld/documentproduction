@@ -19,13 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.cas.authentication.CasAuthenticationToken;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import au.gov.qld.bdm.documentproduction.Application;
 
 @Component
-public class CommonModelInterceptor extends HandlerInterceptorAdapter {
+public class CommonModelInterceptor implements HandlerInterceptor {
 	private static final Logger LOG = LoggerFactory.getLogger(CommonModelInterceptor.class);
 	private final String fullUrl;
 	private final String casServiceLogin;
