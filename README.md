@@ -27,7 +27,31 @@ Administration portal UI built upon the Colorlib Gentelella theme: https://githu
 ### Prerequisites
 - AWS account with sufficient permission to create resources including IAM entries.
 - WAF WebACL rules suitable for you environment. Note: You will need to allow sufficiently large payloads to be submitted for sending PDFs to be signed.
-- IAM policy managed separately for you to allocate KMS signing permissions as you create KMS keys.
+- IAM policy managed separately for you to allocate KMS signing permissions as you create KMS keys. It should similar to:
+```{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "ReadSecrets",
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret"
+            ],
+            "Resource": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:ENV*/databases/documentproduction-*"
+        },
+        {
+            "Sid": "ReadKms",
+            "Effect": "Allow",
+            "Action": [
+                "kms:Sign",
+                "kms:GetPublicKey"
+            ],
+            "Resource": "arn:aws:kms:REGION:ACCOUNT_ID:key/KMS_KEY_ID"
+        }
+    ]
+}
+```
 - Maven and at least Java 8 to build the application.
 - Running CAS which provides CAS v2 protocol and attributes for role and agency. The role is checked against for basic administration access (see Cloudformation property referencing what you want the role to be called). The agency is used to separate all data so that a running instance can support multiple agencies/business units.
 
