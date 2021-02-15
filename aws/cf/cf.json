@@ -5,6 +5,10 @@
 			"Type": "AWS::EC2::VPC::Id",
 			"Description": "Choose the VPC ID"
 		},
+		"DBSubnetGroupParam": {
+			"Type": "String",
+			"Description": "Choose the RDS Database subnet group name"
+		},
 		"ASubnetIdParam": {
 			"Type": "AWS::EC2::Subnet::Id",
 			"Description": "Choose the A Subnet ID"
@@ -350,6 +354,7 @@
 				},
 				"PubliclyAccessible": "false",
 				"CopyTagsToSnapshot": "true",
+				"DBSubnetGroupName": { "Ref": "DBSubnetGroupParam" },
 				"VPCSecurityGroups": [ { "Ref": "sgrds" } ]
 			}
 		},

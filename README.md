@@ -52,6 +52,7 @@ Administration portal UI built upon the Colorlib Gentelella theme: https://githu
     ]
 }
 ```
+- A RDS subnet group in your preferred VPC that includes your subnets and availability zones.
 - Maven and at least Java 8 to build the application.
 - Running CAS which provides CAS v2 protocol and attributes for role and agency. The role is checked against for basic administration access (see Cloudformation property referencing what you want the role to be called). The agency is used to separate all data so that a running instance can support multiple agencies/business units.
 
