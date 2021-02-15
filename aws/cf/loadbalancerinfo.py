@@ -55,12 +55,10 @@ import boto3
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-eb = boto3.client('elasticbeanstalk')
-ec2 = boto3.client('ec2')
-
 def lambda_handler(event, context):
     logger.info('got event {}'.format(event))
     try:
+        eb = boto3.client('elasticbeanstalk', region='ap-southeast-2')
         responseData = {}
         if event['RequestType'] in ["Create"]:            
             eb_env_name = event['ResourceProperties']['EBEnvName']
