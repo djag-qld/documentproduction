@@ -130,6 +130,11 @@
 						"Value" : { "Fn::Join" : [ ",", [ { "Ref": "ASubnetIdParam" }, { "Ref": "BSubnetIdParam"}, { "Ref": "CSubnetIdParam"} ] ] }
 					},
 					{
+						"Namespace": "aws:ec2:vpc",
+						"OptionName": "AssociatePublicIpAddress",
+						"Value" : "true"
+					},
+					{
 						"Namespace": "aws:elasticbeanstalk:command",
 						"OptionName": "DeploymentPolicy",
 						"Value": "Rolling"
