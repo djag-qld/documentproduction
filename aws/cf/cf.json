@@ -37,13 +37,13 @@
 			"Type": "String",
 			"Description": "Hosted Zone ID for Beanstalk in your region: https://docs.aws.amazon.com/general/latest/gr/elasticbeanstalk.html"
 		},
-		"SecretAndKMSRoleArn": {
+		"KMSPolicyArn": {
 			"Type": "String",
-			"Description": "Application service role allowing access to SecretManager for database access and KMS keys",
+			"Description": "Application service role allowing access to KMS keys",
 			"AllowedPattern": "arn:aws:iam::.+:policy/.+"
 		},
 		"DBName": {
-			"Default": "documentproduction",
+			"Default": "test_dp_db",
 			"Description": "Database name",
 			"Type": "String",
 			"MinLength": "1",
@@ -335,9 +335,30 @@
 				"ManagedPolicyArns": [ 
 					"arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier",
 					{
-						"Ref": "SecretAndKMSRoleArn"
+						"Ref": "SecretPolicy"
+					},
+					{
+						"Ref": "KMSPolicyArn"
 					}
 				]
+			}
+		},
+		"SecretPolicy": {
+			"Type": "AWS::IAM::ManagedPolicy",
+			"Properties": {
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Action": [
+								"secretsmanager:GetSecretValue",
+								"secretsmanager:DescribeSecret"
+							],
+							"Resource": { "Ref": "RDSInstanceRotationSecret" }
+						}
+					]
+				}
 			}
 		},
 		"Database": {
@@ -664,16 +685,6 @@
 					"LBArn"
 				] },
 				"WebACLArn": { "Ref": "WebACLArnParam" }
-			}
-		}
-	},	
-	"Outputs": {
-		"RDSEndpoint": {
-			"Value": {
-				"Fn::GetAtt": [
-					"Database",
-					"Endpoint.Address"
-				]
 			}
 		}
 	}

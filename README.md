@@ -27,19 +27,11 @@ Administration portal UI built upon the Colorlib Gentelella theme: https://githu
 ### Prerequisites
 - AWS account with sufficient permission to create resources including IAM entries.
 - WAF WebACL rules suitable for you environment. Note: You will need to allow sufficiently large payloads to be submitted for sending PDFs to be signed.
+- At least one customer managed Asymmetric KMS key for signing and verifying.
 - IAM policy managed separately for you to allocate KMS signing permissions as you create KMS keys. It should similar to:
 ```{
     "Version": "2012-10-17",
     "Statement": [
-        {
-            "Sid": "ReadSecrets",
-            "Effect": "Allow",
-            "Action": [
-                "secretsmanager:GetSecretValue",
-                "secretsmanager:DescribeSecret"
-            ],
-            "Resource": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:ENV*/databases/documentproduction-*"
-        },
         {
             "Sid": "ReadKms",
             "Effect": "Allow",
@@ -47,7 +39,7 @@ Administration portal UI built upon the Colorlib Gentelella theme: https://githu
                 "kms:Sign",
                 "kms:GetPublicKey"
             ],
-            "Resource": "arn:aws:kms:REGION:ACCOUNT_ID:key/KMS_KEY_ID"
+            "Resource": "arn:aws:kms:REGION:ACCOUNT_ID:key/*" (make sure to set your own KMS key IDs here instead)
         }
     ]
 }
@@ -56,6 +48,7 @@ Administration portal UI built upon the Colorlib Gentelella theme: https://githu
 - Maven and at least Java 8 to build the application.
 - Running CAS which provides CAS v2 protocol and attributes for role and agency. The role is checked against for basic administration access (see Cloudformation property referencing what you want the role to be called). The agency is used to separate all data so that a running instance can support multiple agencies/business units.
 
+Note: This service does not create KMS keys for you. You need to create them yourself and update hte IAM managed policy to provide access to this service to sign and get public keys from.
 Note: The infrastructure is handled by a Cloudformation template under aws/cf. 
 
 ### Steps
