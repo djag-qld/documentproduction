@@ -43,7 +43,7 @@
 			"AllowedPattern": "arn:aws:iam::.+:policy/.+"
 		},
 		"DBName": {
-			"Default": "test_dp_db",
+			"Default": "documentproduction",
 			"Description": "Database name",
 			"Type": "String",
 			"MinLength": "1",
