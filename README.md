@@ -29,7 +29,8 @@ Administration portal UI built upon the Colorlib Gentelella theme: https://githu
 - WAF WebACL rules suitable for you environment. Note: You will need to allow sufficiently large payloads to be submitted for sending PDFs to be signed.
 - At least one customer managed Asymmetric KMS key for signing and verifying.
 - IAM policy managed separately for you to allocate KMS signing permissions as you create KMS keys. It should similar to:
-```{
+```
+{
     "Version": "2012-10-17",
     "Statement": [
         {
@@ -44,15 +45,15 @@ Administration portal UI built upon the Colorlib Gentelella theme: https://githu
     ]
 }
 ```
-- A RDS subnet group in your preferred VPC that includes your subnets and availability zones.
+- An RDS subnet group in your preferred VPC that includes your subnets and availability zones.
 - Maven and at least Java 8 to build the application.
 - Running CAS which provides CAS v2 protocol and attributes for role and agency. The role is checked against for basic administration access (see Cloudformation property referencing what you want the role to be called). The agency is used to separate all data so that a running instance can support multiple agencies/business units.
 
-Note: This service does not create KMS keys for you. You need to create them yourself and update hte IAM managed policy to provide access to this service to sign and get public keys from.
+Note: This service does not create KMS keys for you. You need to create them yourself and update the IAM managed policy to provide access to this service to sign and get public keys from.
 
-### Steps
+### Installation Steps
 1. Create an S3 bucket which you will store your build artifacts in. Cloudformation will use these files to create the application and Lambda environment information trigger.
-2. Copy the LoadBalancer.zip or build it yourself and upload it to your S3 build artifacts bucket.
+2. Copy the LoadBalancer.zip or build it yourself and upload it to your S3 build artifacts bucket. There is a package.sh script included to help with this.
 3. Build the application using Maven and your own profile or use the awstest profile to use environment variables provided by CloudFormation and Beanstalk. Otherwise, you may want to make your own copy of the app/src/env/awstest and resources within for your specific need.
 4. Upload the built JAR file to your S3 build artifacts bucket.
 5. Deploy the cf.json template and provide necessary properties/tags.
@@ -61,9 +62,9 @@ Note: This service does not create KMS keys for you. You need to create them you
 aws cloudformation create-stack --stack-name testdocumentproduction --template-body file://cf.json --tags file://testtags.json --parameters file://test.json --capabilities CAPABILITY_IAM
 ```
 
-## Administration
+## Post installation administration
 ### Creating an API key
-1. Login to the administration portal
+1. Login to the administration portal using your CAS
 2. Choose API Keys in the navigation panel
 3. Take a copy of the API key automatically generated - this value cannot be recovered once you submit the Create key request. The whole key’s value is needed for API requests
 4. Click the submit button
@@ -84,3 +85,8 @@ aws cloudformation create-stack --stack-name testdocumentproduction --template-b
 12. Click Create - a CSR should download
 13. Provide your CSR to someone on the AATL and/or your department authority
 14. Once you receive a signed certificate, enter all the same fields into the Save Key form including your certificate this time. Note: The administration service is a little hard to use at this point and saves over everything based on the alias to create a new version.
+
+## Uninstalling
+1. Delete the Cloudformation stack 
+2. You may wish to delete the RDS snapshot and Cloudwatch logs
+3. Clean up your KMS key and IAM managed policy
