@@ -7,11 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,10 +41,17 @@ public class TemplateController {
 	}
 	
 	@GetMapping("/user/template")
-	public ModelAndView view(Principal principal) {
+	public ModelAndView view(Principal principal, @CookieValue(defaultValue = "false", required = false) boolean hideInactive) {
 		Map<String, Object> model = new HashMap<>();
-		model.put("items", service.list(new WebAuditableCredential(principal).getAgency()));
+		model.put("items", service.list(new WebAuditableCredential(principal).getAgency(), hideInactive));
+		model.put("hideInactive", hideInactive);
 		return new ModelAndView("template", model);
+	}
+	
+	@GetMapping("/user/template/toggleLatest")
+	public RedirectView toggleLatest(Principal principal, @CookieValue(defaultValue = "false", required = false) boolean hideInactive, HttpServletResponse response) {
+		response.addCookie(new Cookie("hideInactive", String.valueOf(!hideInactive)));
+		return redirectToList();
 	}
 	
 	@PostMapping("/user/template/add")

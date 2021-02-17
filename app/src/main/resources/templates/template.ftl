@@ -1,7 +1,8 @@
 <#assign pageTitle>Templates</#assign>
 <#include "top.ftl"/>
-<div class="x_panel" id="template">        
-    <div class="x_content">
+<div class="x_panel" id="template">
+	<a href="template/toggleLatest" id="toggleLatest"><#if hideInactive>Show inactive<#else>Hide inactive</#if></a>        
+    <div class="x_content">    	
 		<table class="table table-striped">
 			<thead>
 				<tr>

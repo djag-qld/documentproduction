@@ -17,4 +17,6 @@ public interface SignatureKeyRepository extends CrudRepository<SignatureKey, Str
 
 	Optional<SignatureKey> findByAgencyAndAliasAndVersion(String agency, String alias, int version);
 
+	Collection<SignatureKeyView> findAllByAgencyAndLatestOrderByCreatedDesc(String agency, boolean latest);
+
 }

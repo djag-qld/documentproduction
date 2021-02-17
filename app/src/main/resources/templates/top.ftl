@@ -17,6 +17,7 @@
 	    <link href="${themebase}/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet">
 	    <link href="${themebase}/build/css/custom.min.css" rel="stylesheet">
 		<link rel="stylesheet" href="${themebase}/vendors/select2/dist/css/select2.min.css">
+		<link href="${fullUrl}/../public/css/documentproduction-2.css" rel="stylesheet">
 		
 		<#if dataTables?has_content && dataTables>
 		<link href="${themebase}/vendors/datatables.net-bs/css/dataTables.bootstrap.min.css" rel="stylesheet" />

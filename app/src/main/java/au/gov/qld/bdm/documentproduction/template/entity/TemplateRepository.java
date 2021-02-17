@@ -16,4 +16,6 @@ public interface TemplateRepository extends CrudRepository<Template, String> {
 	Optional<TemplateView> findByAliasAndVersionAndAgency(String alias, int version, String agency);
 
 	Optional<Template> findByAliasAndAgencyAndVersion(String alias, String agency, int version);
+
+	Collection<TemplateView> findAllByAgencyAndLatestOrderByAliasAscVersionDesc(String agency, boolean latest);
 }

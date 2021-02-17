@@ -4,8 +4,12 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,12 +32,19 @@ public class DocumentSignatureController {
 	}
 	
 	@GetMapping("/user/documentsignature")
-	public ModelAndView view(Principal principal) {
+	public ModelAndView view(Principal principal, @CookieValue(defaultValue = "false", required = false) boolean hideInactive) {
 		Map<String, Object> model = new HashMap<>();
 		String agency = new WebAuditableCredential(principal).getAgency();
-		model.put("items", service.list(agency));
-		model.put("signatureKeyAliases", signatureKeyService.list(agency));
+		model.put("items", service.list(agency, hideInactive));
+		model.put("signatureKeyAliases", signatureKeyService.list(agency, true));
+		model.put("hideInactive", hideInactive);
 		return new ModelAndView("documentsignature", model);
+	}
+	
+	@GetMapping("/user/documentsignature/toggleLatest")
+	public RedirectView toggleLatest(Principal principal, @CookieValue(defaultValue = "false", required = false) boolean hideInactive, HttpServletResponse response) {
+		response.addCookie(new Cookie("hideInactive", String.valueOf(!hideInactive)));
+		return redirectToList();
 	}
 	
 	@PostMapping("/user/documentsignature/add")

@@ -13,4 +13,6 @@ public interface DocumentSignatureRepository extends CrudRepository<DocumentSign
 
 	Collection<DocumentSignatureView> findAllByAgencyOrderByCreatedDesc(String agency);
 
+	Collection<DocumentSignatureView> findAllByAgencyAndLatestOrderByCreatedDesc(String agency, boolean latest);
+
 }

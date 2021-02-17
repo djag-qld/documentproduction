@@ -67,7 +67,10 @@ public class DocumentSignatureService {
 		repository.save(entity);
 	}
 
-	public Collection<DocumentSignatureView> list(String agency) {
+	public Collection<DocumentSignatureView> list(String agency, boolean hideInactive) {
+		if (hideInactive) {
+			return repository.findAllByAgencyAndLatestOrderByCreatedDesc(agency, true);
+		}
 		return repository.findAllByAgencyOrderByCreatedDesc(agency);
 	}
 }

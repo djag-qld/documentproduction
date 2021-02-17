@@ -37,15 +37,16 @@ public class TemplateService {
 			entity.setAgency(credential.getAgency());
 			entity.setContent(content);
 			entity.setAlias(alias);
+			entity.setLatest(true);
 			repository.save(entity);
 			return;
-		} else {
-			auditService.audit(AuditBuilder.of("templatesave").from(credential).target(existing.get().getId(), alias, "template").build());
-			Template template = existing.get();
-			template.setLatest(false);
-			template.updated(credential.getId());
-			repository.save(template);
-		}
+		} 
+		
+		auditService.audit(AuditBuilder.of("templatesave").from(credential).target(existing.get().getId(), alias, "template").build());
+		Template template = existing.get();
+		template.setLatest(false);
+		template.updated(credential.getId());
+		repository.save(template);
 		
 		Template entity = new Template(credential.getId());
 		auditService.audit(AuditBuilder.of("templatesave").from(credential).target(entity.getId(), alias, "template").build());
@@ -54,10 +55,15 @@ public class TemplateService {
 		entity.setAlias(alias);
 		entity.setVersion(existing.get().getVersion() + 1);
 		entity.updated(credential.getId());
+		entity.setLatest(true);
 		repository.save(entity);
 	}
 
-	public Collection<TemplateView> list(String agency) {
+	public Collection<TemplateView> list(String agency, boolean hideInactive) {
+		if (hideInactive) {
+			return repository.findAllByAgencyAndLatestOrderByAliasAscVersionDesc(agency, true);
+			
+		}
 		return repository.findAllByAgencyOrderByAliasAscVersionDesc(agency);
 	}
 

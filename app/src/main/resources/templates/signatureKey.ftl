@@ -3,6 +3,7 @@
 <div class="row">
 	<div class="col-md-12 col-sm-12">
 		<div class="x_panel" id="signaturekey">
+			<a href="signaturekey/toggleLatest" id="toggleLatest"><#if hideInactive>Show inactive<#else>Hide inactive</#if></a>
 		    <div class="x_content">
 				<table class="table table-striped">
 					<thead>

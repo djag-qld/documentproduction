@@ -1,6 +1,7 @@
 <#assign pageTitle>Signatures</#assign>
 <#include "top.ftl"/>
-<div class="x_panel" id="documentsignature">        
+<div class="x_panel" id="documentsignature">
+	<a href="documentsignature/toggleLatest" id="toggleLatest"><#if hideInactive>Show inactive<#else>Hide inactive</#if></a>        
     <div class="x_content">
 		<table class="table table-striped">
 			<thead>

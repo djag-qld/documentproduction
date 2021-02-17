@@ -38,7 +38,10 @@ public class SignatureKeyService {
 		repository.count();
 	}
 
-	public Collection<SignatureKeyView> list(String agency) {
+	public Collection<SignatureKeyView> list(String agency, boolean hideInactive) {
+		if (hideInactive) {
+			return repository.findAllByAgencyAndLatestOrderByCreatedDesc(agency, true);
+		}
 		return repository.findAllByAgencyOrderByCreatedDesc(agency);
 	}
 
@@ -55,15 +58,16 @@ public class SignatureKeyService {
 			entity.setCertificate(certificate);
 			entity.setKmsId(kmsId);
 			entity.setAlias(alias);
+			entity.setLatest(true);
 			entity.setTimestampEndpoint(timestampEndpoint);
 			repository.save(entity);
 			return;
-		} else {
-			auditService.audit(AuditBuilder.of("signaturekeysave").from(credential).target(existing.get().getId(), alias, "signaturekey").build());
-			existing.get().setLatest(false);
-			existing.get().updated(credential.getId());
-			repository.save(existing.get());
-		}
+		} 
+		
+		auditService.audit(AuditBuilder.of("signaturekeysave").from(credential).target(existing.get().getId(), alias, "signaturekey").build());
+		existing.get().setLatest(false);
+		existing.get().updated(credential.getId());
+		repository.save(existing.get());
 		
 		SignatureKey entity = new SignatureKey(credential.getId());
 		auditService.audit(AuditBuilder.of("signaturekeysave").from(credential).target(entity.getId(), alias, "signaturekey").build());
@@ -71,6 +75,7 @@ public class SignatureKeyService {
 		entity.setCertificate(certificate);
 		entity.setKmsId(kmsId);
 		entity.setAlias(alias);
+		entity.setLatest(true);
 		entity.setTimestampEndpoint(timestampEndpoint);
 		entity.setVersion(existing.get().getVersion() + 1);
 		entity.updated(credential.getId());
