@@ -1,6 +1,7 @@
 package au.gov.qld.bdm.documentproduction.sign;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -62,8 +63,12 @@ public class SigningService {
 		pdSignature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
 		pdSignature.setName(signatory);
 		pdSignature.setReason(reason);
-		pdSignature.setLocation(location);
-		pdSignature.setContactInfo(contactInfo);
+		if (isNotBlank(location)) {
+			pdSignature.setLocation(location);
+		}
+		if (isNotBlank(contactInfo)) {
+			pdSignature.setContactInfo(contactInfo);
+		}
 		
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
