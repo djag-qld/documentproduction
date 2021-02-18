@@ -370,7 +370,7 @@
 				"DBInstanceClass": "db.t3.micro",
 				"AllocatedStorage": "10",
 				"Engine": "postgres",
-				"EngineVersion": "9.6.18",
+				"EngineVersion": "12.5",
 				"StorageEncrypted": "true",
 				"MasterUsername": {
 					"Fn::Sub": "{{resolve:secretsmanager:${RDSInstanceRotationSecret}::username}}"
