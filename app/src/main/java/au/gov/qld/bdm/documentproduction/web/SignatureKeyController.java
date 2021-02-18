@@ -1,6 +1,7 @@
 package au.gov.qld.bdm.documentproduction.web;
 
 import static org.apache.commons.lang3.StringUtils.defaultString;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +31,6 @@ import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKey;
 
 @Controller
 public class SignatureKeyController {
-	
 	private final SignatureKeyService service;
 	private final SigningService signingService;
 	private final String subjectdn;
@@ -58,11 +58,16 @@ public class SignatureKeyController {
 	}
 	
 	@GetMapping("/user/signaturekey/{alias}/certificate/{version}")
-	public void certificate(Principal principal, @PathVariable String alias, @PathVariable int version, HttpServletResponse response) throws IOException {
-		response.setContentType("text/plain");
+	public void certificate(Principal principal, @PathVariable String alias, @PathVariable int version, HttpServletResponse response) throws IOException {		
+        String certificate = service.getCertificate(new WebAuditableCredential(principal).getAgency(), alias, version);
+        if (isBlank(certificate)) {
+        	throw new IllegalArgumentException("Could not find by alias, version and agency");
+        }
+        
+        response.setContentType("text/plain");
         response.setHeader("Cache-Control", "must-revalidate");
-        response.setHeader("Content-Disposition", "attachment; filename=" + alias + ".cer");
-		IOUtils.write(service.getCertificate(new WebAuditableCredential(principal).getAgency(), alias, version), response.getOutputStream(), StandardCharsets.UTF_8);
+        response.setHeader("Content-Disposition", "attachment; filename=" + alias + ".cer");		
+		IOUtils.write(certificate, response.getOutputStream(), StandardCharsets.UTF_8);
 	}
 	
 	@PostMapping("/user/signaturekey/add")
@@ -73,11 +78,15 @@ public class SignatureKeyController {
 	
 	@PostMapping("/user/signaturekey/csr")
 	public void csr(Principal principal, @RequestParam String alias, @RequestParam String subjectdn, HttpServletResponse response) throws IOException {
+		WebAuditableCredential credential = new WebAuditableCredential(principal);
+        Optional<SignatureKey> signatureKey = service.findKeyForAlias(credential.getAgency(), alias.split(" v:")[0], Integer.valueOf(alias.split(" v:")[1]));
+		if (!signatureKey.isPresent()) {
+			throw new IllegalArgumentException("Could not find by alias, version and agency");
+        }
+		
 		response.setContentType("text/plain");
         response.setHeader("Cache-Control", "must-revalidate");
         response.setHeader("Content-Disposition", "attachment; filename=" + alias + ".csr");
-        WebAuditableCredential credential = new WebAuditableCredential(principal);
-        Optional<SignatureKey> signatureKey = service.findKeyForAlias(credential.getAgency(), alias.split(" v:")[0], Integer.valueOf(alias.split(" v:")[1]));
 		IOUtils.write(signingService.generateCsr(signatureKey.get(), credential, subjectdn), response.getOutputStream(), StandardCharsets.UTF_8);
 	}
 	

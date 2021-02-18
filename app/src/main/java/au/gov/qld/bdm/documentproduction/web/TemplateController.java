@@ -62,28 +62,27 @@ public class TemplateController {
 	
 	@GetMapping("/user/template/view/{alias}/{version}")
 	public void view(Principal principal, @PathVariable String alias, @PathVariable int version, HttpServletResponse response) throws IOException {
-		response.setContentType("text/plain");
-        response.setHeader("Cache-Control", "must-revalidate");
-        response.setHeader("Content-Disposition", "attachment; filename=" + alias + "-" + version + ".txt");
         Optional<TemplateView> view = service.findByAliasAndVersionAndAgency(alias, version, new WebAuditableCredential(principal).getAgency());
         if (!view.isPresent()) {
         	throw new IllegalArgumentException("Could not find by alias, version and agency");
         }
-        
+
+        response.setContentType("text/plain");
+        response.setHeader("Cache-Control", "must-revalidate");
+        response.setHeader("Content-Disposition", "attachment; filename=" + alias + "-" + version + ".txt");
         IOUtils.write(view.get().getContent(), response.getOutputStream(), StandardCharsets.UTF_8);
 	}
 	
 	@GetMapping("/user/template/preview/{template}/{version}")
 	public void preview(Principal principal, @PathVariable String template, @PathVariable int version, HttpServletResponse response) throws IOException, TemplateException, DocumentException {		
-		response.setContentType("application/pdf");
-        response.setHeader("Cache-Control", "must-revalidate");
+		response.setHeader("Cache-Control", "must-revalidate");
 		try {
+			response.setContentType("application/pdf");
 			response.setHeader("Content-disposition", "attachment; filename=preview- " + template + "-" + version + ".pdf");
 			documentService.preview(new WebAuditableCredential(principal), template, version, response.getOutputStream());
 		} catch (Exception e) {
-			response.setHeader("Content-disposition", "attachment; filename=preview- " + template + "-" + version + ".error.txt");
+			response.setHeader("Content-disposition", "attachment; filename=error.txt");
 			response.setContentType("text/plain");
-	        response.setHeader("Cache-Control", "must-revalidate");
 			IOUtils.write(e.getMessage(), response.getOutputStream(), StandardCharsets.UTF_8);
 		}
 	}
