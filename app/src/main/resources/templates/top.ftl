@@ -107,7 +107,7 @@
               <ul class="nav navbar-nav navbar-right" style="margin-top:0.8em">
                 <li class="logout">
                   	<form method="POST" action="/logout">
-                  	   <span class="logged-in-as"><i class="fa fa-user"> </i> Logged in as ${username}</span>
+                  	   <span class="logged-in-as"><i class="fa fa-user"> </i> Logged in as ${username!'-'}</span>
 					   <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 					   <input id="logout" type="submit" value="Log out" class="btn btn-info" />
 					</form>

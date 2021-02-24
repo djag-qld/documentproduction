@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -42,11 +43,11 @@ public class ApiScenarioTest {
 	@Test
 	@WithMockUser(username = "user1", password = "pwd", roles = "USER")
 	public void shouldReturnDocument() throws Exception {
-		String apiKey = RandomStringUtils.random(10) + "." + RandomStringUtils.random(10);
-		String signatureKeyAlias = RandomStringUtils.random(10);
-		String documentSignatureAlias = RandomStringUtils.random(10);
-		String templateAlias = RandomStringUtils.random(10);
+		String signatureKeyAlias = RandomStringUtils.randomAlphanumeric(10);
+		String documentSignatureAlias = RandomStringUtils.randomAlphanumeric(10);
+		String templateAlias = RandomStringUtils.randomAlphanumeric(10);
 		
+		String apiKey = mockMvc.perform(get("/user/apikey")).andReturn().getModelAndView().getModel().get("apiKey").toString();
 		mockMvc.perform(post("/user/apikey/add?apiKey=" + apiKey).with(csrf().asHeader())).andDo(print()).andExpect(status().is3xxRedirection());
 		mockMvc.perform(post("/user/signaturekey/add").param("alias", signatureKeyAlias).param("kmsId", "stub").param("certificate", "some cert")
 				.with(csrf().asHeader())).andDo(print()).andExpect(status().is3xxRedirection());
