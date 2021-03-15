@@ -7,7 +7,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>2.4.3</version>
-		<relativePath /> <!-- lookup parent from repository -->
+		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>au.gov.qld.bdm.documentproduction</groupId>
 	<artifactId>document-production-app</artifactId>
@@ -62,7 +62,7 @@
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
-			<version>2.9.2</version>
+			<version>2.10.5</version>
 		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>
@@ -274,9 +274,9 @@
 											<phase>package</phase>
 											<configuration>
 													<tasks>
-															<unzip src="${project.build.directory}/${project.build.finalName}.jar" dest="${project.build.directory}/${project.build.finalName}" />
+															<unzip src="${project.build.directory}/${project.build.finalName}.jar" dest="${project.build.directory}/${project.build.finalName}"/>
 															<copy todir="${project.build.directory}/${project.build.finalName}/" overwrite="false">
-																	<fileset dir="${project.basedir}/src/env/awstest" includes=".ebextensions/**" />
+																	<fileset dir="${project.basedir}/src/env/awstest" includes=".ebextensions/**"/>
 															</copy>
 															<zip compress="false" destfile="${project.build.directory}/${project.build.finalName}.jar" basedir="${project.build.directory}/${project.build.finalName}"/>
 													</tasks>
@@ -325,9 +325,9 @@
 											<phase>package</phase>
 											<configuration>
 													<tasks>
-															<unzip src="${project.build.directory}/${project.build.finalName}.jar" dest="${project.build.directory}/${project.build.finalName}" />
+															<unzip src="${project.build.directory}/${project.build.finalName}.jar" dest="${project.build.directory}/${project.build.finalName}"/>
 															<copy todir="${project.build.directory}/${project.build.finalName}/" overwrite="false">
-																	<fileset dir="${project.basedir}/src/env/awsprod" includes=".ebextensions/**" />
+																	<fileset dir="${project.basedir}/src/env/awsprod" includes=".ebextensions/**"/>
 															</copy>
 															<zip compress="false" destfile="${project.build.directory}/${project.build.finalName}.jar" basedir="${project.build.directory}/${project.build.finalName}"/>
 													</tasks>
