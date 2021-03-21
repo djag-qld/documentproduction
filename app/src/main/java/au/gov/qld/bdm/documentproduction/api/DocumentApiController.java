@@ -57,20 +57,24 @@ public class DocumentApiController {
 		}
 		
 		final DocumentResponse documentResponse = new DocumentResponse();
-		final String documentId = documentService.record(credential.get(), request.getTemplateAlias(), request.getSignaturesAlias());
-		documentResponse.setDocumentId(documentId);
-		ByteArrayOutputStream pdfOs = new ByteArrayOutputStream();
-		documentService.produce(credential.get(), documentId, request.getTemplateModel(), DocumentOutputFormat.PDF, pdfOs);
-		if (request.getSignaturesAlias().isEmpty()) {
-			documentResponse.setData(Base64.encodeBase64String(pdfOs.toByteArray()));
+		try {
+			final String documentId = documentService.record(credential.get(), request.getTemplateAlias(), request.getSignaturesAlias());
+			documentResponse.setDocumentId(documentId);
+			ByteArrayOutputStream pdfOs = new ByteArrayOutputStream();
+			documentService.produce(credential.get(), documentId, request.getTemplateModel(), DocumentOutputFormat.PDF, pdfOs);
+			if (request.getSignaturesAlias().isEmpty()) {
+				documentResponse.setData(Base64.encodeBase64String(pdfOs.toByteArray()));
+				return new ResponseEntity<>(documentResponse, HttpStatus.OK);
+			}
+			
+			ByteArrayOutputStream signedOs = new ByteArrayOutputStream();
+			ByteArrayInputStream pdf = new ByteArrayInputStream(pdfOs.toByteArray());
+			documentService.sign(credential.get(), documentId, request.getTemplateModel(), pdf, signedOs);
+			documentResponse.setData(Base64.encodeBase64String(signedOs.toByteArray()));
 			return new ResponseEntity<>(documentResponse, HttpStatus.OK);
+		} catch (IllegalArgumentException e) {
+			return new ResponseEntity<>(documentResponse, HttpStatus.BAD_REQUEST);
 		}
-		
-		ByteArrayOutputStream signedOs = new ByteArrayOutputStream();
-		ByteArrayInputStream pdf = new ByteArrayInputStream(pdfOs.toByteArray());
-		documentService.sign(credential.get(), documentId, request.getTemplateModel(), pdf, signedOs);
-		documentResponse.setData(Base64.encodeBase64String(signedOs.toByteArray()));
-		return new ResponseEntity<>(documentResponse, HttpStatus.OK);
 	}
 	
 	@ApiOperation(tags = "Document", value = "Generate a document", response = byte[].class)
@@ -83,17 +87,21 @@ public class DocumentApiController {
 		}
 		
 		response.setHeader("Content-disposition", "attachment; filename=document.pdf");
-		final String documentId = documentService.record(credential.get(), request.getTemplateAlias(), request.getSignaturesAlias());
-		ByteArrayOutputStream pdfOs = new ByteArrayOutputStream();
-		documentService.produce(credential.get(), documentId, request.getTemplateModel(), DocumentOutputFormat.PDF, pdfOs);
-		if (request.getSignaturesAlias().isEmpty()) {
-			return new ResponseEntity<>(pdfOs.toByteArray(), HttpStatus.OK);
+		try {
+			final String documentId = documentService.record(credential.get(), request.getTemplateAlias(), request.getSignaturesAlias());
+			ByteArrayOutputStream pdfOs = new ByteArrayOutputStream();
+			documentService.produce(credential.get(), documentId, request.getTemplateModel(), DocumentOutputFormat.PDF, pdfOs);
+			if (request.getSignaturesAlias().isEmpty()) {
+				return new ResponseEntity<>(pdfOs.toByteArray(), HttpStatus.OK);
+			}
+			
+			ByteArrayOutputStream signedOs = new ByteArrayOutputStream();
+			ByteArrayInputStream pdf = new ByteArrayInputStream(pdfOs.toByteArray());
+			documentService.sign(credential.get(), documentId, request.getTemplateModel(), pdf, signedOs);
+			return new ResponseEntity<>(signedOs.toByteArray(), HttpStatus.OK);
+		} catch (IllegalArgumentException e) {
+			return new ResponseEntity<>(new byte[] {}, HttpStatus.BAD_REQUEST);
 		}
-		
-		ByteArrayOutputStream signedOs = new ByteArrayOutputStream();
-		ByteArrayInputStream pdf = new ByteArrayInputStream(pdfOs.toByteArray());
-		documentService.sign(credential.get(), documentId, request.getTemplateModel(), pdf, signedOs);
-		return new ResponseEntity<>(signedOs.toByteArray(), HttpStatus.OK);
 	}
 
 	private Optional<AuditableCredential> apiKeyToCredential(String apiKey) {
