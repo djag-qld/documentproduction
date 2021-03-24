@@ -345,6 +345,15 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<REGION>stub</REGION>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
 					<archive>
