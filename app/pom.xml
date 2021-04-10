@@ -32,7 +32,7 @@
 		<dependency>
 			<groupId>com.github.darrachequesne</groupId>
 			<artifactId>spring-data-jpa-datatables</artifactId>
-			<version>5.0.0</version>
+			<version>5.1.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>log4j</groupId>
