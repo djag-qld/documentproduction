@@ -86,7 +86,7 @@ import com.google.common.cache.LoadingCache;
 public class OcspHelper
 {
     private static final Logger LOG = LoggerFactory.getLogger(OcspHelper.class);
-    private static final LoadingCache<OcspKey, OcspHelper> INSTANCES = CacheBuilder.newBuilder().maximumSize(100).expireAfterWrite(24, TimeUnit.HOURS)
+    private static final LoadingCache<OcspKey, OcspHelper> INSTANCES = CacheBuilder.newBuilder().maximumSize(100).expireAfterWrite(CertificateVerifier.CACHE_PERIOD, TimeUnit.SECONDS)
     		.build(new CacheLoader<OcspKey, OcspHelper>() {
     			@Override
     			public OcspHelper load(OcspKey key) throws IOException, GeneralSecurityException, OCSPException, RevokedCertificateException {

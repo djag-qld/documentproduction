@@ -18,7 +18,7 @@
 	<properties>
 		<java.version>1.8</java.version>
 		<spring-cloud.version>Hoxton.SR9</spring-cloud.version>
-		<aws.sdk.version>1.11.974</aws.sdk.version>
+		<aws.sdk.version>1.11.993</aws.sdk.version>
 		<mockito.version>3.5.10</mockito.version>
 		<hamcrest.version>2.2</hamcrest.version>
 		<nanohttpd.version>2.3.1</nanohttpd.version>
@@ -32,7 +32,7 @@
 		<dependency>
 			<groupId>com.github.darrachequesne</groupId>
 			<artifactId>spring-data-jpa-datatables</artifactId>
-			<version>5.0.0</version>
+			<version>5.1.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>log4j</groupId>
@@ -43,7 +43,7 @@
 		<dependency>
 		    <groupId>com.google.guava</groupId>
 		    <artifactId>guava</artifactId>
-		    <version>30.1-jre</version>
+		    <version>30.1.1-jre</version>
 		</dependency>		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -343,6 +343,15 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<REGION>stub</REGION>
+					</systemPropertyVariables>
+				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>

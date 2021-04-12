@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.pdfbox.examples.signature.cert.CertificateVerifier;
 import org.apache.pdfbox.examples.signature.validation.CertificateProccessingException;
 import org.apache.pdfbox.pdmodel.encryption.SecurityProvider;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
@@ -57,7 +56,7 @@ public class CertInformationCollector
 {
     private static final Logger LOG = LoggerFactory.getLogger(CertInformationCollector.class);
     
-    private static final LoadingCache<String, X509Certificate> ISSUER_CERTS = CacheBuilder.newBuilder().maximumSize(100).expireAfterWrite(24, TimeUnit.HOURS)
+    private static final LoadingCache<String, X509Certificate> ISSUER_CERTS = CacheBuilder.newBuilder().maximumSize(100).expireAfterWrite(CertificateVerifier.CACHE_PERIOD, TimeUnit.SECONDS)
 		.build(new CacheLoader<String, X509Certificate>() {
 			@Override
 			public X509Certificate load(String issuerUrl) throws IOException, GeneralSecurityException {

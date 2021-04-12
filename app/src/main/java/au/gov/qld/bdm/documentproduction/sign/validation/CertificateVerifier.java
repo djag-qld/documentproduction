@@ -81,7 +81,9 @@ import com.google.common.cache.LoadingCache;
 public final class CertificateVerifier
 {
     private static final Logger LOG = LoggerFactory.getLogger(CertificateVerifier.class);
-    private static final LoadingCache<String, Collection<? extends Certificate>> ISSUER_CERTS = CacheBuilder.newBuilder().maximumSize(100).expireAfterWrite(24, TimeUnit.HOURS)
+	static final long CACHE_PERIOD = 10;
+	
+    private static final LoadingCache<String, Collection<? extends Certificate>> ISSUER_CERTS = CacheBuilder.newBuilder().maximumSize(100).expireAfterWrite(CACHE_PERIOD, TimeUnit.SECONDS)
     		.build(new CacheLoader<String, Collection<? extends Certificate>>() {
     			@Override
     			public Collection<? extends Certificate> load(String issuerUrl) throws IOException, GeneralSecurityException {

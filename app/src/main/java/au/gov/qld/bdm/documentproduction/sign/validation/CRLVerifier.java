@@ -41,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 import javax.naming.NamingException;
 
 import org.apache.pdfbox.examples.signature.cert.CertificateVerificationException;
-import org.apache.pdfbox.examples.signature.cert.CertificateVerifier;
 import org.apache.pdfbox.examples.signature.cert.RevokedCertificateException;
 import org.apache.pdfbox.pdmodel.encryption.SecurityProvider;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -69,7 +68,7 @@ import com.google.common.cache.LoadingCache;
 public final class CRLVerifier
 {
 	private static final Logger LOG = LoggerFactory.getLogger(CRLVerifier.class);
-	private static final LoadingCache<String, X509CRL> ISSUER_CRL = CacheBuilder.newBuilder().maximumSize(100).expireAfterWrite(24, TimeUnit.HOURS)
+	private static final LoadingCache<String, X509CRL> ISSUER_CRL = CacheBuilder.newBuilder().maximumSize(100).expireAfterWrite(CertificateVerifier.CACHE_PERIOD, TimeUnit.SECONDS)
 			.build(new CacheLoader<String, X509CRL>() {
 				@Override
 				public X509CRL load(String crlURL) throws IOException, GeneralSecurityException {
