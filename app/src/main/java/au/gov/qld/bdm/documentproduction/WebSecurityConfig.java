@@ -34,17 +34,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private final String serverName;
 	private final boolean secure;
 	private final UserService userService;
+	private final String casTicketUrlPrefix;
 
 	@Autowired
 	public WebSecurityConfig(UserService userService, @Value("${web.servername}") String serverName, @Value("${web.secure}") boolean secure,
 			@Value("${cas.service.login}") String casServiceLogin, @Value("${cas.service.logout}") String casServiceLogout,
-			@Value("${cas.url.prefix}") String casUrlPrefix, @Value("${app.service.home}") String appServiceHome) {
+			@Value("${cas.url.prefix}") String casUrlPrefix, @Value("${cas.ticket.url.prefix}") String casTicketUrlPrefix, @Value("${app.service.home}") String appServiceHome) {
 		super(true);
 		this.userService = userService;
 		this.serverName = serverName;
 		this.casServiceLogin = casServiceLogin;
 		this.casServiceLogout = casServiceLogout;
 		this.casUrlPrefix = casUrlPrefix;
+		this.casTicketUrlPrefix = casTicketUrlPrefix;
 		this.appServiceHome = appServiceHome;
 		this.secure = secure;
 	}
@@ -80,7 +82,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Bean
 	public Cas20ServiceTicketValidator cas20ServiceTicketValidator() {
-		return new Cas20ServiceTicketValidator(casUrlPrefix);
+		return new Cas20ServiceTicketValidator(casTicketUrlPrefix);
 	}
 
 	@Bean
