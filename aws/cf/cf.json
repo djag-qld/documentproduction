@@ -25,6 +25,10 @@
 			"Type": "String",
 			"Description": "URL for base of CAS"
 		},
+		"CASTicketEndpoint": {
+			"Type": "String",
+			"Description": "URL for base of CAS ticket verification"
+		},
 		"CASRole": {
 			"Type": "String",
 			"Description": "Role required from CAS to access the administration portal"
@@ -280,6 +284,11 @@
 						"Namespace": "aws:elasticbeanstalk:application:environment",
 						"OptionName": "CAS_ENDPOINT",
 						"Value": { "Ref": "CASEndpoint" }
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:application:environment",
+						"OptionName": "CAS_TICKET_ENDPOINT",
+						"Value": { "Ref": "CASTicketEndpoint" }
 					},
 					{
 						"Namespace": "aws:elasticbeanstalk:application:environment",
