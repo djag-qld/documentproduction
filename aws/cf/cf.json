@@ -381,6 +381,7 @@
 				"Engine": "postgres",
 				"EngineVersion": "12.5",
 				"StorageEncrypted": "true",
+				"StorageType": "gp2",
 				"MasterUsername": {
 					"Fn::Sub": "{{resolve:secretsmanager:${RDSInstanceRotationSecret}::username}}"
 				},
