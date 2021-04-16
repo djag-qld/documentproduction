@@ -6,7 +6,8 @@ This service is used to sign PDFs with digital signatures. The digital signature
 2. API key management
 3. Template management and processing with FreeMarker https://github.com/apache/freemarker
 4. Signature and key management, including provisioning of CSRs for AATL members to sign
-5. Auditing of changes and document production
+5. Add LTV to the document and signatures by providing a timestamp service link (RFC3161)
+6. Auditing of changes and document production
 
 ## Architecture
 ![Architecture](https://github.com/qld-gov-au/documentproduction/raw/main/arch.png)
