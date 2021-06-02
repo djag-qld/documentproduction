@@ -17,23 +17,17 @@ import com.amazonaws.services.kms.model.SignRequest;
 import com.amazonaws.services.kms.model.SignResult;
 import com.amazonaws.services.kms.model.SigningAlgorithmSpec;
 
-import au.gov.qld.bdm.documentproduction.sign.repository.SignatureRecordService;
-
 public class AwsKmsContentSigner implements ContentSigner {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 	private final String region;
 	private final String key;
 	private final AlgorithmIdentifier signatureAlgorithm;
 	private final SigningAlgorithmSpec signingAlgorithmSpec;
-	private final SignatureRecordService signatureRecordServicey;
-	private final String agency;
 
-    public AwsKmsContentSigner(String region, String key, SigningAlgorithmSpec signingAlgorithmSpec, SignatureRecordService signatureRecordService, String agency) {
+    public AwsKmsContentSigner(String region, String key, SigningAlgorithmSpec signingAlgorithmSpec) {
         this.region = region;
 		this.key = key;
 		this.signingAlgorithmSpec = signingAlgorithmSpec;
-		this.signatureRecordServicey = signatureRecordService;
-		this.agency = agency;
         this.signatureAlgorithm = new DefaultSignatureAlgorithmIdentifierFinder().find(signingAlgorithmNameBySpec.get(signingAlgorithmSpec));
     }
 
@@ -47,7 +41,6 @@ public class AwsKmsContentSigner implements ContentSigner {
     			.withMessageType(MessageType.RAW)
     			.withMessage(message);
 		SignResult signResult = kmsClient.sign(signRequest);
-		signatureRecordServicey.storeSignature(signResult.getSignature(), signingAlgorithmSpec.name(), key, agency);
 		return signResult.getSignature().array();
     }
 

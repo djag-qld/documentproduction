@@ -49,3 +49,6 @@ ALTER TABLE signature_record ADD COLUMN IF NOT EXISTS created_at timestamp not n
 ALTER TABLE signature_record ADD COLUMN IF NOT EXISTS last_modified_at timestamp not null DEFAULT now();
 ALTER TABLE signature_record ADD COLUMN IF NOT EXISTS status text not null DEFAULT 'VALID';
 ALTER TABLE signature_record ADD COLUMN IF NOT EXISTS agency text;
+
+CREATE INDEX IF NOT EXISTS signature_record_agency_idx ON signature_record (agency);
+CREATE INDEX IF NOT EXISTS signature_record_signature_idx ON signature_record (signature_hex);

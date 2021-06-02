@@ -24,6 +24,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import au.gov.qld.bdm.documentproduction.audit.AuditService;
 import au.gov.qld.bdm.documentproduction.audit.AuditableCredential;
 import au.gov.qld.bdm.documentproduction.audit.entity.AuditAction;
+import au.gov.qld.bdm.documentproduction.sign.repository.SignatureRecordService;
 import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKey;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -38,6 +39,7 @@ public class SigningServiceTest {
 	@Mock AuditService auditService;
 	@Mock AuditableCredential credential;
 	@Mock SignatureKey signatureKey;
+	@Mock SignatureRecordService signatureRecordService;
 
 	@Before
 	public void setUp() throws Exception {
@@ -45,7 +47,7 @@ public class SigningServiceTest {
 		when(contentSigner.getOutputStream()).thenReturn(new ByteArrayOutputStream());
 		when(contentSigner.getSignature()).thenReturn("test".getBytes());
 		when(signatureKey.getKmsId()).thenReturn(KEY_ID);
-		service = new SigningService(contentSignerFactory, auditService);
+		service = new SigningService(contentSignerFactory, auditService, signatureRecordService);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })

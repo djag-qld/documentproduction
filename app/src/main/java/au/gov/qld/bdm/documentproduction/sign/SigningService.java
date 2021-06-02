@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import au.gov.qld.bdm.documentproduction.audit.AuditBuilder;
 import au.gov.qld.bdm.documentproduction.audit.AuditService;
 import au.gov.qld.bdm.documentproduction.audit.AuditableCredential;
+import au.gov.qld.bdm.documentproduction.sign.repository.SignatureRecordService;
 import au.gov.qld.bdm.documentproduction.sign.validation.AddValidationInformation;
 import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKey;
 import au.gov.qld.bdm.documentproduction.web.SigningRequest;
@@ -44,11 +45,13 @@ public class SigningService {
 	private static final Logger LOG = LoggerFactory.getLogger(SigningService.class);
 	private final ContentSignerFactory contentSignerFactory;
 	private final AuditService auditService;
+	private final SignatureRecordService signatureRecordService;
 
 	@Autowired
-    public SigningService(ContentSignerFactory contentSignerFactory, AuditService auditService) throws GeneralSecurityException, IOException {
+    public SigningService(ContentSignerFactory contentSignerFactory, AuditService auditService, SignatureRecordService signatureRecordService) throws GeneralSecurityException, IOException {
 		this.contentSignerFactory = contentSignerFactory;
 		this.auditService = auditService;
+		this.signatureRecordService = signatureRecordService;
 		Security.addProvider(new BouncyCastleProvider());
     }
 
@@ -76,7 +79,7 @@ public class SigningService {
 		
 		LOG.info("Creating signature content");
 		CertificateResponse certificate = new CertificateResponse(signatureKey.getCertificate());
-		Signature signature = new Signature(signatureKey, certificate, contentSignerFactory);
+		Signature signature = new Signature(signatureKey, certificate, contentSignerFactory, signatureRecordService);
 		SignatureOptions options = new SignatureOptions();
 		options.setPreferredSignatureSize(SignatureOptions.DEFAULT_SIGNATURE_SIZE * 10);
 		doc.addSignature(pdSignature, signature, options);

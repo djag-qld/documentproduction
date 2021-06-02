@@ -1,6 +1,5 @@
 package au.gov.qld.bdm.documentproduction.sign.repository;
 
-import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.stream.Collectors;
 
@@ -25,8 +24,8 @@ public class SignatureRecordService {
 		this.repository = repository;
 	}
 	
-	public void storeSignature(ByteBuffer signature, String algorithm, String key, String agency) {
-		SignatureRecord record = new SignatureRecord(DigestUtils.sha256Hex(signature.array()), "SHA-256", algorithm, key, region, agency);
+	public void storeSignature(byte[] signature, String algorithm, String key, String agency) {
+		SignatureRecord record = new SignatureRecord(DigestUtils.sha256Hex(signature), "SHA-256", algorithm, key, region, agency);
 
 		LOG.info("Saving signature: {}, signatureHashAlgorithm: {}, alogirthm: {}, key: {}, region: {}, agency: {}", 
 				record.getSignatureHex(), record.getSignatureHexAlgorithm(), record.getSignatureAlgorithm(), record.getKeyId(), record.getKeyRegion(), record.getAgency());
