@@ -1,4 +1,4 @@
-<#assign pageTitle>Keys</#assign>
+<#assign pageTitle>Signing keys</#assign>
 <#include "top.ftl"/>
 <div class="row">
 	<div class="col-md-12 col-sm-12">
@@ -45,7 +45,7 @@
 	<div class="col-md-6 col-sm-6">
 		<div class="x_panel" id="signaturekeyadd">        
 		    <div class="x_title">
-				<h2>Save Key</h2>
+				<h2>Save signing key</h2>
 				<div class="clearfix"></div>
 			</div>
 			<div class="x_content">

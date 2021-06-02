@@ -1,4 +1,4 @@
-<#assign pageTitle>Templates</#assign>
+<#assign pageTitle>Document templates</#assign>
 <#include "top.ftl"/>
 <div class="x_panel" id="template">
 	<a href="template/toggleLatest" id="toggleLatest"><#if hideInactive>Show inactive<#else>Hide inactive</#if></a>        
@@ -36,7 +36,7 @@
 </div>
 <div class="x_panel" id="templateadd">        
     <div class="x_title">
-		<h2>Save Template</h2>
+		<h2>Save document template</h2>
 		<div class="clearfix"></div>
 	</div>
 	<div class="x_content">

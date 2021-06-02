@@ -1,4 +1,4 @@
-<#assign pageTitle>Signatures</#assign>
+<#assign pageTitle>Signature templates</#assign>
 <#include "top.ftl"/>
 <div class="x_panel" id="documentsignature">
 	<a href="documentsignature/toggleLatest" id="toggleLatest"><#if hideInactive>Show inactive<#else>Hide inactive</#if></a>        
@@ -43,7 +43,7 @@
 </div>
 <div class="x_panel" id="documentsignatureadd">        
     <div class="x_title">
-		<h2>Save Signature</h2>
+		<h2>Save signature template</h2>
 		<div class="clearfix"></div>
 	</div>
 	<div class="x_content">
