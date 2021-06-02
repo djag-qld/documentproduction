@@ -44,3 +44,7 @@ CREATE TABLE IF NOT EXISTS signature_record (
 	key_id varchar(255) not null,
 	key_region varchar(255) not null
 );
+
+ALTER TABLE signature_record ADD COLUMN IF NOT EXISTS created_at timestamp not null DEFAULT now();
+ALTER TABLE signature_record ADD COLUMN IF NOT EXISTS last_modified_at timestamp not null DEFAULT now();
+ALTER TABLE signature_record ADD COLUMN IF NOT EXISTS status text not null DEFAULT 'VALID';

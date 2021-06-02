@@ -1,5 +1,6 @@
 package au.gov.qld.bdm.documentproduction.sign.repository;
 
+import java.util.Date;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -21,6 +22,12 @@ public class SignatureRecord {
 	private String keyId;
 	@Column(nullable = false)
 	private String keyRegion;
+	@Column(nullable = false)
+	private Date createdAt;
+	@Column(nullable = false)
+	private Date lastModifiedAt;
+	@Column(nullable = false)
+	private String status;
 	
 	private SignatureRecord() {
 		this.id = UUID.randomUUID().toString();
@@ -28,6 +35,9 @@ public class SignatureRecord {
 	
 	public SignatureRecord(String signatureHex, String signatureHexAlgorithm, String signatureAlgorithm, String keyId, String keyRegion) {
 		this();
+		setStatus("VALID");
+		setCreatedAt(new Date());
+		setLastModifiedAt(getCreatedAt());
 		setKeyRegion(keyRegion);
 		setKeyId(keyId);
 		setSignatureAlgorithm(signatureAlgorithm);
@@ -73,5 +83,29 @@ public class SignatureRecord {
 
 	public void setSignatureHexAlgorithm(String signatureHexAlgorithm) {
 		this.signatureHexAlgorithm = signatureHexAlgorithm;
+	}
+
+	public Date getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Date getLastModifiedAt() {
+		return lastModifiedAt;
+	}
+
+	public void setLastModifiedAt(Date lastModifiedAt) {
+		this.lastModifiedAt = lastModifiedAt;
 	}
 }
