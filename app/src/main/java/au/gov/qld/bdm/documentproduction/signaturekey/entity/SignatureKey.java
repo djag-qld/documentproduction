@@ -56,6 +56,10 @@ public class SignatureKey extends Audited implements SignatureKeyView, Updatable
 	public void setAgency(String agency) {
 		this.agency = agency;
 	}
+	
+	public String getAgency() {
+		return agency;
+	}
 
 	public String getCertificate() {
 		return certificate;

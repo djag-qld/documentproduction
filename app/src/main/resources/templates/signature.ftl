@@ -1,18 +1,19 @@
-<#assign pageTitle>Documents</#assign>
+<#assign pageTitle>Signatures</#assign>
 <#assign dataTables=true />
 <#include "top.ftl"/>
 <div class="x_panel" id="document">
-    <div class="x_title">Documents produced</div>
+    <div class="x_title">Signatures produced</div>
     <div class="x_content">
     	<table class="table table-striped" id="dataListTable" style="width: 100%">
 			<thead>
 				<tr>
 					<th>ID</th>
 					<th>Created</th>
-					<th>Created by</th>					
-					<th>Template</th>
-					<th>Signatures</th>
-					<th>Counter</th>
+					<th>Signature</th>
+					<th>Signature digest</th>
+					<th>Signature algorithm</th>
+					<th>KMS ID</th>					
+					<th>Status</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -27,7 +28,7 @@ $(document).ready(function() {
 	$('#dataListTable').dataTable({
 		'ajax': {
 			'contentType': 'application/json', 
-			'url': 'document/list/data',
+			'url': 'signature/list/data',
 			'type': 'POST',
 			'beforeSend': function (request) {
      			request.setRequestHeader("${_csrf.headerName}", "${_csrf.token}");
@@ -40,30 +41,25 @@ $(document).ready(function() {
 				data: 'id',
 			},
 			{ 
-            	data: 'created',
-            	render: function(data, type, row) {
-            		return timeConverter(row.created);
+            	data: 'createdAt',
+            	render: function(data, type, row) {            		
+            		return timeConverter(row.createdAt);
             	}
             },
-			{ 
-            	data: 'createdBy'
-			},
-			{ 
-            	data: 'template.alias'
+			{
+				data: 'signatureHex',
 			},
 			{
-				data: 'signatures',				
-				render: function(data, type, row) {
-					var joined = "";
-					for (var i=0; i < data.length; i++) {
-						joined = data[i].alias + "; ";
-					}
-					return joined;
-				},
-				"searchable": false
+				data: 'signatureHexAlgorithm',
+			},
+			{
+				data: 'signatureAlgorithm',
+			},
+			{
+				data: 'keyId',
 			},
 			{ 
-            	data: 'counter'
+            	data: 'status'
 			}
         ],
         order: [[ 1, "desc" ]],

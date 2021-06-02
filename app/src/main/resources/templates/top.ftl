@@ -74,10 +74,13 @@
                     	<a href="${fullUrl}/document"><i class="fa fa-book"></i> Documents</a>
 	                </li>
 	                <li>
+                    	<a href="${fullUrl}/signature"><i class="fa fa-pencil"></i> Signatures</a>
+	                </li>
+	                <li>
                     	<a href="${fullUrl}/template"><i class="fa fa-file-code-o"></i> Document templates</a>
 	                </li>
 	                <li>
-                    	<a href="${fullUrl}/documentsignature"><i class="fa fa-pencil"></i> Signature templates</a>
+                    	<a href="${fullUrl}/documentsignature"><i class="fa fa-edit"></i> Signature templates</a>
 	                </li>
 	                <li>
                     	<a href="${fullUrl}/signaturekey"><i class="fa fa-key"></i> Signing keys</a>

@@ -8,7 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 @Entity
-public class SignatureRecord {
+public class SignatureRecord implements SignatureView {
 	@Id
 	private String id;
 	
@@ -28,14 +28,17 @@ public class SignatureRecord {
 	private Date lastModifiedAt;
 	@Column(nullable = false)
 	private String status;
+	@Column
+	private String agency;
 	
 	private SignatureRecord() {
 		this.id = UUID.randomUUID().toString();
 	}
 	
-	public SignatureRecord(String signatureHex, String signatureHexAlgorithm, String signatureAlgorithm, String keyId, String keyRegion) {
+	public SignatureRecord(String signatureHex, String signatureHexAlgorithm, String signatureAlgorithm, String keyId, String keyRegion, String agency) {
 		this();
 		setStatus("VALID");
+		setAgency(agency);
 		setCreatedAt(new Date());
 		setLastModifiedAt(getCreatedAt());
 		setKeyRegion(keyRegion);
@@ -43,6 +46,10 @@ public class SignatureRecord {
 		setSignatureAlgorithm(signatureAlgorithm);
 		setSignatureHex(signatureHex);
 		setSignatureHexAlgorithm(signatureHexAlgorithm);
+	}
+	
+	public String getId() {
+		return id;
 	}
 
 	public String getSignatureHex() {
@@ -107,5 +114,13 @@ public class SignatureRecord {
 
 	public void setLastModifiedAt(Date lastModifiedAt) {
 		this.lastModifiedAt = lastModifiedAt;
+	}
+
+	public String getAgency() {
+		return agency;
+	}
+
+	public void setAgency(String agency) {
+		this.agency = agency;
 	}
 }

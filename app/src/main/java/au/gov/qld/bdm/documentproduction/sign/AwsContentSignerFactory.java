@@ -35,7 +35,7 @@ public class AwsContentSignerFactory implements ContentSignerFactory {
 			return new StubContentSigner();
 		}
 		
-		return new AwsKmsContentSigner(region, key.getKmsId(), SigningAlgorithmSpec.RSASSA_PKCS1_V1_5_SHA_256, signatureRecordService);
+		return new AwsKmsContentSigner(region, key.getKmsId(), SigningAlgorithmSpec.RSASSA_PKCS1_V1_5_SHA_256, signatureRecordService, key.getAgency());
 	}
 	
 	@Override
@@ -44,7 +44,7 @@ public class AwsContentSignerFactory implements ContentSignerFactory {
 			return new StubContentSigner();
 		}
 		
-		return new AwsKmsContentSigner(region, key.getKmsId(), certificate.getAlgorithm(), signatureRecordService);
+		return new AwsKmsContentSigner(region, key.getKmsId(), certificate.getAlgorithm(), signatureRecordService, key.getAgency());
 	}
 
 	@Override

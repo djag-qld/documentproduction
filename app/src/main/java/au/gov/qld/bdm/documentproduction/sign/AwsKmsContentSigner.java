@@ -26,12 +26,14 @@ public class AwsKmsContentSigner implements ContentSigner {
 	private final AlgorithmIdentifier signatureAlgorithm;
 	private final SigningAlgorithmSpec signingAlgorithmSpec;
 	private final SignatureRecordService signatureRecordServicey;
+	private final String agency;
 
-    public AwsKmsContentSigner(String region, String key, SigningAlgorithmSpec signingAlgorithmSpec, SignatureRecordService signatureRecordService) {
+    public AwsKmsContentSigner(String region, String key, SigningAlgorithmSpec signingAlgorithmSpec, SignatureRecordService signatureRecordService, String agency) {
         this.region = region;
 		this.key = key;
 		this.signingAlgorithmSpec = signingAlgorithmSpec;
 		this.signatureRecordServicey = signatureRecordService;
+		this.agency = agency;
         this.signatureAlgorithm = new DefaultSignatureAlgorithmIdentifierFinder().find(signingAlgorithmNameBySpec.get(signingAlgorithmSpec));
     }
 
@@ -45,7 +47,7 @@ public class AwsKmsContentSigner implements ContentSigner {
     			.withMessageType(MessageType.RAW)
     			.withMessage(message);
 		SignResult signResult = kmsClient.sign(signRequest);
-		signatureRecordServicey.storeSignature(signResult.getSignature(), signingAlgorithmSpec.name(), key);
+		signatureRecordServicey.storeSignature(signResult.getSignature(), signingAlgorithmSpec.name(), key, agency);
 		return signResult.getSignature().array();
     }
 
