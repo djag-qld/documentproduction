@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import au.gov.qld.bdm.documentproduction.api.entity.ApiKeyView;
 import au.gov.qld.bdm.documentproduction.audit.AuditableCredential;
 import au.gov.qld.bdm.documentproduction.sign.SigningService;
+import au.gov.qld.bdm.documentproduction.sign.repository.SignatureRecord;
+import au.gov.qld.bdm.documentproduction.sign.repository.SignatureRecordService;
 import au.gov.qld.bdm.documentproduction.signaturekey.SignatureKeyService;
 import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKey;
 import au.gov.qld.bdm.documentproduction.web.SigningRequest;
@@ -47,12 +49,14 @@ public class SignApiController {
 	private final SigningService signingService;
 	private final SignatureKeyService keyService;
 	private final ApiKeyService apiKeyService;
+	private final SignatureRecordService signatureRecordService;
 
 	@Autowired
-	public SignApiController(SigningService signingService, SignatureKeyService keyService, ApiKeyService apiKeyService) {
+	public SignApiController(SigningService signingService, SignatureKeyService keyService, ApiKeyService apiKeyService, SignatureRecordService signatureRecordService) {
 		this.signingService = signingService;
 		this.keyService = keyService;
 		this.apiKeyService = apiKeyService;
+		this.signatureRecordService = signatureRecordService;
 	}
 	
 	@ApiOperation(tags = "Signature", value = "Apply signature to a document", response = byte[].class)
@@ -81,6 +85,27 @@ public class SignApiController {
 		SignResponse signResponse = new SignResponse();
 		signResponse.setData(Base64.encodeBase64String(os.toByteArray()));
 		return new ResponseEntity<>(signResponse, HttpStatus.valueOf(responseCode));
+	}
+	
+	@ApiOperation(tags = "Signature", value = "Verify signature", response = VerifyResponse.class)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "OK", response = VerifyResponse.class), @ApiResponse(code = 401, message = "Authorization failed") })
+	@RequestMapping(value = "/sign/verify", produces = { MediaType.APPLICATION_JSON_VALUE }, method = RequestMethod.POST)
+	public @ResponseBody ResponseEntity<VerifyResponse> verify(@ApiIgnore @RequestHeader("Authorization") String apiKey, @RequestBody VerifyRequest verifyRequest) {
+		Optional<AuditableCredential> credential = apiKeyToCredential(apiKey);
+		if (!credential.isPresent()) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();			
+		}
+		
+		Optional<SignatureRecord> optional = signatureRecordService.verify(verifyRequest.getSignatureHex(), credential.get());
+		if (optional.isPresent()) {
+			VerifyResponse responseBody = new VerifyResponse();
+			responseBody.setCreatedAt(optional.get().getCreatedAt());
+			responseBody.setLastModifiedAt(optional.get().getLastModifiedAt());
+			responseBody.setStatus(optional.get().getStatus());
+			return ResponseEntity.ok(responseBody);
+		}
+		
+		return ResponseEntity.notFound().build();		
 	}
 	
 	private int verifyAndSign(String apiKey, SigningRequest signRequest, OutputStream os) throws GeneralSecurityException, IOException {
