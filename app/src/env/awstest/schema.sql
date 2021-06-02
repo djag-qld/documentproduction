@@ -35,3 +35,12 @@ ALTER TABLE IF EXISTS signature_key ADD COLUMN IF NOT EXISTS timestamp_endpoint 
 
 ALTER TABLE document_signature ADD COLUMN IF NOT EXISTS location_template TEXT;
 ALTER TABLE document_signature ADD COLUMN IF NOT EXISTS contact_info_template TEXT;
+
+CREATE TABLE IF NOT EXISTS signature_record (
+	id varchar(50) primary key,
+	signature_hex varchar(1024) not null,
+	signature_hex_algorithm varchar(255) not null,
+	signature_algorithm varchar(255) not null,
+	key_id varchar(255) not null,
+	key_region varchar(255) not null
+);

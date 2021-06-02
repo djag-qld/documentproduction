@@ -15,15 +15,18 @@ import com.amazonaws.services.kms.model.GetPublicKeyRequest;
 import com.amazonaws.services.kms.model.GetPublicKeyResult;
 import com.amazonaws.services.kms.model.SigningAlgorithmSpec;
 
+import au.gov.qld.bdm.documentproduction.sign.repository.SignatureRecordService;
 import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKey;
 
 @Service
 public class AwsContentSignerFactory implements ContentSignerFactory {
 
     private final String region;
+	private final SignatureRecordService signatureRecordService;
     
-	public AwsContentSignerFactory(@Value("${aws.kms.region}") String region) {
+	public AwsContentSignerFactory(@Value("${aws.kms.region}") String region, SignatureRecordService signatureRecordService) {
 		this.region = region;
+		this.signatureRecordService = signatureRecordService;
 	}
 	
 	@Override
@@ -32,7 +35,7 @@ public class AwsContentSignerFactory implements ContentSignerFactory {
 			return new StubContentSigner();
 		}
 		
-		return new AwsKmsContentSigner(region, key.getKmsId(), SigningAlgorithmSpec.RSASSA_PKCS1_V1_5_SHA_256);
+		return new AwsKmsContentSigner(region, key.getKmsId(), SigningAlgorithmSpec.RSASSA_PKCS1_V1_5_SHA_256, signatureRecordService);
 	}
 	
 	@Override
@@ -41,7 +44,7 @@ public class AwsContentSignerFactory implements ContentSignerFactory {
 			return new StubContentSigner();
 		}
 		
-		return new AwsKmsContentSigner(region, key.getKmsId(), certificate.getAlgorithm());
+		return new AwsKmsContentSigner(region, key.getKmsId(), certificate.getAlgorithm(), signatureRecordService);
 	}
 
 	@Override
