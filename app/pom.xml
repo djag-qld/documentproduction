@@ -18,7 +18,7 @@
 	<properties>
 		<java.version>1.8</java.version>
 		<spring-cloud.version>Hoxton.SR9</spring-cloud.version>
-		<aws.sdk.version>1.12.10</aws.sdk.version>
+		<aws.sdk.version>1.12.12</aws.sdk.version>
 		<mockito.version>3.5.10</mockito.version>
 		<hamcrest.version>2.2</hamcrest.version>
 		<nanohttpd.version>2.3.1</nanohttpd.version>
