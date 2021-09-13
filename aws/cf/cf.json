@@ -379,7 +379,7 @@
 				"DBInstanceClass": "db.t3.micro",
 				"AllocatedStorage": "10",
 				"Engine": "postgres",
-				"EngineVersion": "12.5",
+				"EngineVersion": "12.7",
 				"StorageEncrypted": "true",
 				"StorageType": "gp2",
 				"MasterUsername": {
