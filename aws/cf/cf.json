@@ -109,7 +109,7 @@
 				"ApplicationName": {
 					"Ref": "Application"
 				},
-				"SolutionStackName": "64bit Amazon Linux 2018.03 v2.11.3 running Java 8",
+				"SolutionStackName": "64bit Amazon Linux 2 v3.2.5 running Corretto 8",
 				"VersionLabel": { 
 					"Ref": "AppVersion"
 				},
