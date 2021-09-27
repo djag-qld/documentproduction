@@ -139,6 +139,11 @@
 						"Value" : "true"
 					},
 					{
+						"Namespace": "aws:ec2:instances",
+						"OptionName": "InstanceTypes",
+						"Value" : "t3.micro"
+					},
+					{
 						"Namespace": "aws:elasticbeanstalk:command",
 						"OptionName": "DeploymentPolicy",
 						"Value": "Rolling"
