@@ -11,7 +11,7 @@
       <qrcode-capture @decode="onDecode"></qrcode-capture>
     </div>
     <p v-if="result != ''">
-      Verfied: <b v-if="verifyResult">Verified</b><b v-else>Not verified</b>
+      Verfied: <b v-if="verifyResult">Verified</b><b v-else>Not verified</b><br/>
       Created: <b>{{ result.cdate }}</b><br/>
       Document ID: <b>{{ result.dId }}</b><br/>
       Fields: <b>{{ result.f }}</b><br/>
