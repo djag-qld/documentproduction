@@ -1,10 +1,9 @@
 package au.gov.qld.bdm.documentproduction.document;
 
-import static java.util.Arrays.asList;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -47,7 +47,9 @@ import au.gov.qld.bdm.documentproduction.document.entity.DocumentRepository;
 import au.gov.qld.bdm.documentproduction.document.entity.DocumentSignature;
 import au.gov.qld.bdm.documentproduction.document.entity.DocumentSignatureView;
 import au.gov.qld.bdm.documentproduction.document.entity.DocumentView;
+import au.gov.qld.bdm.documentproduction.sign.ContentSignerFactory;
 import au.gov.qld.bdm.documentproduction.sign.SigningService;
+import au.gov.qld.bdm.documentproduction.signaturekey.SignatureKeyService;
 import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKey;
 import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKeyView;
 import au.gov.qld.bdm.documentproduction.template.TemplateService;
@@ -68,13 +70,18 @@ public class DocumentService {
 	private static final int DPP = 96;
 	private static final String TEMPLATE_WRAPPER_FMT = "<#compress><?xml version=\"1.0\" encoding=\"UTF-8\"?>%n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">%s</#compress>";
 	private final InlineTemplateService inlineTemplateService;
-	private final Iterable<Resource> fonts;
 	private final SigningService signingService;
 	private final DocumentCounterRepository documentCounterRepository;
+	private final Resource[] classpathFonts;
+	private final SignatureKeyService signatureKeyService;
+	private final ContentSignerFactory contentSignerFactory;
+	
+	private List<Resource> fileSystemFonts;
 	
 	@Autowired
 	public DocumentService(DocumentRepository repository, DocumentSignatureService documentSignatureService, TemplateService templateService, SigningService signingService,
-			AuditService auditService, InlineTemplateService inlineTemplateService, @Value("classpath:fonts/*.ttf") Resource[] fonts, DocumentCounterRepository documentCounterRepository) throws IOException {
+			AuditService auditService, InlineTemplateService inlineTemplateService, @Value("classpath:fonts/*.ttf") Resource[] classpathFonts, 
+			DocumentCounterRepository documentCounterRepository, SignatureKeyService signatureKeyService, ContentSignerFactory contentSignerFactory) throws IOException {
 		this.repository = repository;
 		this.documentSignatureService = documentSignatureService;
 		this.templateService = templateService;
@@ -82,8 +89,16 @@ public class DocumentService {
 		this.auditService = auditService;
 		this.inlineTemplateService = inlineTemplateService;
 		this.documentCounterRepository = documentCounterRepository;
+		this.classpathFonts = classpathFonts;
+		this.signatureKeyService = signatureKeyService;
+		this.contentSignerFactory = contentSignerFactory;
+		this.fileSystemFonts = saveFontsToFileSystem();
+		verifyFontsExist(fileSystemFonts);
+	}
+
+	private List<Resource> saveFontsToFileSystem() throws FileNotFoundException, IOException {
 		List<Resource> fileFontResources = new ArrayList<>();
-		for (Resource font : fonts) {
+		for (Resource font : classpathFonts) {
 			File tempFile = new File(FileUtils.getTempDirectoryPath() + File.separator + font.getFilename());
 			FileOutputStream fileWriter = new FileOutputStream(tempFile);
 			IOUtils.copy(font.getInputStream(), fileWriter);
@@ -92,8 +107,8 @@ public class DocumentService {
 			fileWriter.close();
 			fileFontResources.add(new FileSystemResource(tempFile));
 		}
-		this.fonts = fileFontResources;
-		LOG.info("Loaded fonts: {}", asList(this.fonts));
+		LOG.info("Loaded fonts: {}", fileFontResources);
+		return fileFontResources;
 	}
 	
 	public DataTablesOutput<DocumentView> list(DataTablesInput input, String agency) {
@@ -287,11 +302,13 @@ public class DocumentService {
 		String templated = inlineTemplateService.template(document.getTemplate().getId(), String.format(TEMPLATE_WRAPPER_FMT, document.getTemplate().getContent()), formData);
 
 		ITextRenderer renderer = new ITextRenderer(DOTS_PER_POINT, DPP);
-		for (Resource font : fonts) {
+		verifyFontsExist(fileSystemFonts);
+		for (Resource font : fileSystemFonts) {
 			renderer.getFontResolver().addFont(font.getFile().getPath(), BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
 		}
 		renderer.setDocumentFromString(templated);
-		renderer.getSharedContext().setReplacedElementFactory(new BarcodeElementFactory(renderer.getOutputDevice()));
+		renderer.getSharedContext().setReplacedElementFactory(new BarcodeElementFactory(renderer.getOutputDevice(), document, templateModel, signatureKeyService,
+				contentSignerFactory));
 		renderer.layout();
 		try {
 			renderer.createPDF(os);
@@ -300,6 +317,26 @@ public class DocumentService {
 		} catch (DocumentException | IOException e) {
 			throw new IllegalStateException(e.getMessage(), e);
 		}
+	}
+
+	private void verifyFontsExist(List<Resource> fonts) throws IOException {
+		if (classpathFonts.length == 0) {
+			LOG.debug("No fonts to save to disk from classpath");
+			return;
+		}
+		
+		if (fonts.stream().anyMatch(not(Resource::exists))) {
+			saveFontsToFileSystem();
+		}
+		
+		if (fonts.stream().anyMatch(not(Resource::exists))) {
+			throw new IllegalStateException("Could not find fonts saved to file system");
+		}
+	}
+	
+	// not available until java 11
+	private static <T> Predicate<T> not(Predicate<T> t) {
+	    return t.negate();
 	}
 
 	private Map<String, Object> templateData(Document document, Map<String, String> templateModel) {

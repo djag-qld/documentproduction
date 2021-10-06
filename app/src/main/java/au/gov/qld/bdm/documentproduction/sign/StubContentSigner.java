@@ -1,5 +1,6 @@
 package au.gov.qld.bdm.documentproduction.sign;
 
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -14,12 +15,12 @@ public class StubContentSigner implements ContentSigner {
 
 	@Override
 	public OutputStream getOutputStream() {
-		return null;
+		return new ByteArrayOutputStream();
 	}
 
 	@Override
 	public byte[] getSignature() {
-		return null;
+		return new byte[] {};
 	}
 
 }

@@ -60,7 +60,7 @@ def lambda_handler(event, context):
     try:
         eb = boto3.client('elasticbeanstalk')
         responseData = {}
-        if event['RequestType'] in ["Create"]:            
+        if event['RequestType'] in ["Create", "Update"]:
             eb_env_name = event['ResourceProperties']['EBEnvName']
             response = eb.describe_environment_resources(
                 EnvironmentName=eb_env_name
