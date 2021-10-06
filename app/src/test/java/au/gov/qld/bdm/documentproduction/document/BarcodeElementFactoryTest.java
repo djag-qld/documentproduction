@@ -22,6 +22,7 @@ import org.xhtmlrenderer.render.BlockBox;
 
 import au.gov.qld.bdm.documentproduction.document.entity.Document;
 import au.gov.qld.bdm.documentproduction.sign.ContentSignerFactory;
+import au.gov.qld.bdm.documentproduction.sign.repository.SignatureRecordService;
 import au.gov.qld.bdm.documentproduction.signaturekey.SignatureKeyService;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -40,6 +41,7 @@ public class BarcodeElementFactoryTest {
 	@Mock Document document;
 	@Mock SignatureKeyService signatureKeyService;
 	@Mock ContentSignerFactory contentSignerFactory;
+	@Mock SignatureRecordService signatureRecordService;
 	
 	@Before
 	public void setUp() {
@@ -49,7 +51,7 @@ public class BarcodeElementFactoryTest {
 		when(barcodeElement.getNodeName()).thenReturn(BarcodeElementFactory.IMG_TAG);
 		when(box.getElement()).thenReturn(barcodeElement);
 		
-		factory = new BarcodeElementFactory(outputDevice, document, templateModel, signatureKeyService, contentSignerFactory);
+		factory = new BarcodeElementFactory(outputDevice, document, templateModel, signatureKeyService, contentSignerFactory, signatureRecordService);
 	}
 	
 	@Test

@@ -32,11 +32,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.ServletTestExecutionListener;
 
 import au.gov.qld.bdm.documentproduction.audit.AuditableCredential;
+import au.gov.qld.bdm.documentproduction.sign.repository.SignatureRecordService;
+import au.gov.qld.bdm.documentproduction.sign.repository.SignatureView;
 import au.gov.qld.bdm.documentproduction.signaturekey.SignatureKeyService;
 import au.gov.qld.bdm.documentproduction.template.TemplateService;
 
@@ -49,6 +52,7 @@ public class DocumentServiceTest {
 	@Autowired DocumentSignatureService signatureService;
 	@Autowired SignatureKeyService signatureKeyService;
 	@Autowired TemplateService templateService;
+	@Autowired SignatureRecordService signatureRecordService;
 	AuditableCredential credential;
 	
 	@Before
@@ -124,6 +128,13 @@ public class DocumentServiceTest {
 		FileUtils.writeByteArrayToFile(new File(System.getProperty("java.io.tmpdir") + File.separator + "testsignedqr.pdf"), os.toByteArray());
 		verifyHasText(PDDocument.load(os.toByteArray()));
 		verifyHasImage(PDDocument.load(os.toByteArray()));
+		
+		DataTablesInput dataTablesInput = new DataTablesInput();
+		dataTablesInput.setLength(1);
+		DataTablesOutput<SignatureView> tablesOutput = signatureRecordService.list(dataTablesInput, credential.getAgency());
+		SignatureView signatureView = tablesOutput.getData().get(0);
+		assertThat(signatureView.getSignatureAlgorithm(), is("2.16.840.1.101.3.4.2.1"));
+		assertThat(signatureView.getSignatureHexAlgorithm(), is("SHA-256"));
 	}
 	
 	@Test

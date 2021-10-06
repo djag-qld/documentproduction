@@ -29,6 +29,7 @@ import com.lowagie.text.pdf.Barcode128;
 
 import au.gov.qld.bdm.documentproduction.document.entity.Document;
 import au.gov.qld.bdm.documentproduction.sign.ContentSignerFactory;
+import au.gov.qld.bdm.documentproduction.sign.repository.SignatureRecordService;
 import au.gov.qld.bdm.documentproduction.signaturekey.SignatureKeyService;
 import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKey;
 import net.glxn.qrgen.core.image.ImageType;
@@ -47,14 +48,16 @@ public class BarcodeElementFactory extends ITextReplacedElementFactory {
 	private final Map<String, String> templateModel;
 	private final SignatureKeyService signatureKeyService;
 	private final ContentSignerFactory contentSignerFactory;
+	private final SignatureRecordService signatureRecordService;
 	
 	public BarcodeElementFactory(ITextOutputDevice outputDevice, Document document, Map<String, String> templateModel, SignatureKeyService signatureKeyService,
-			ContentSignerFactory contentSignerFactory) {
+			ContentSignerFactory contentSignerFactory, SignatureRecordService signatureRecordService) {
 		super(outputDevice);
 		this.document = document;
 		this.templateModel = templateModel;
 		this.signatureKeyService = signatureKeyService;
 		this.contentSignerFactory = contentSignerFactory;
+		this.signatureRecordService = signatureRecordService;
 	}
 
 	@Override
@@ -78,7 +81,7 @@ public class BarcodeElementFactory extends ITextReplacedElementFactory {
 				throw new IllegalArgumentException("No signature key available for that src");
 			}
 			
-			QRContent qrContent = new QRContent();
+			SignedQRContent qrContent = new SignedQRContent();
 			qrContent.setF(new TreeMap<>(templateModel));
 			qrContent.setKId(keyForAlias.get().getAlias() + ":" + keyForAlias.get().getVersion());
 			qrContent.setDId(document.getId());
@@ -87,6 +90,9 @@ public class BarcodeElementFactory extends ITextReplacedElementFactory {
 			try {
 				ContentSigner contentSigner = contentSignerFactory.create(keyForAlias.get());
 				IOUtils.write(qrContent.getSignatureContent(), contentSigner.getOutputStream(), StandardCharsets.UTF_8);
+				signatureRecordService.storeSignature(contentSigner.getSignature(), contentSigner.getAlgorithmIdentifier().getAlgorithm().getId(), 
+						keyForAlias.get().getKmsId(), document.getAgency());
+				
 				String encodedSignature = Base45.getEncoder().encodeToString(contentSigner.getSignature());
 				qrContent.setSig(encodedSignature);
 				return createQRCode(cssWidth, cssHeight, compress(qrContent.getAllContent().getBytes(StandardCharsets.UTF_8)));

@@ -3,6 +3,7 @@ package au.gov.qld.bdm.documentproduction.sign;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.operator.ContentSigner;
 
@@ -10,7 +11,7 @@ public class StubContentSigner implements ContentSigner {
 
 	@Override
 	public AlgorithmIdentifier getAlgorithmIdentifier() {
-		return null;
+		return new AlgorithmIdentifier(new ASN1ObjectIdentifier("2.16.840.1.101.3.4.2.1")); //sha256
 	}
 
 	@Override

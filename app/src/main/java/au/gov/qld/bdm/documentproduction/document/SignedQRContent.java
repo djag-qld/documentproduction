@@ -4,7 +4,7 @@ import java.util.SortedMap;
 
 import com.google.gson.Gson;
 
-public class QRContent {
+public class SignedQRContent {
 
 	private SortedMap<String, String> f;
 	private String sig;
