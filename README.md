@@ -109,7 +109,7 @@ Use the "type" attribute with value: "qrcode" for a QR code.
 
 Use the "type" attribute with value: "signedqrcode" for a signed QR code. 
 ```
-<img src="(KMS key ID to sign with)" type="signedqrcode" width="250" height="250" />
+<img src="(Signature key alias)" type="signedqrcode" width="250" height="250" />
 ```
 
 Use the "type" attribute with value: "barcode" for a line barcode 128:
