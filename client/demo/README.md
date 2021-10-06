@@ -1,4 +1,6 @@
-# qrcodeverifier
+# Signed QR code verification SPA for Document Production
+
+This web application is for demonstration purposes only. It can use the camera or file upload to verify signed QR codes produced by the Document Production service.
 
 ## Project setup
 ```
@@ -14,11 +16,3 @@ npm run serve
 ```
 npm run build
 ```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
