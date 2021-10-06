@@ -1,13 +1,13 @@
 <template>
   <div>
-    <p class="error">Camera/scanning status: {{ error }}</p>
+    <p class="error">Camera status: {{ cameraError }}</p>
     
-    <div v-if="error == ''">      
+    <div v-if="cameraError == ''">
       <div class="stream">
         <qrcode-stream @decode="onDecode" @init="onInit" />
       </div>
     </div>
-    <div v-else class="fileupload">
+    <div class="fileupload">
       <qrcode-capture @decode="onDecode"></qrcode-capture>
     </div>
     <p v-if="result != ''">
@@ -35,6 +35,7 @@ export default {
     return {
       result: '',
       error: '',
+      cameraError: '',
       verifyResult: false,
       certificate: cert
     }
@@ -44,7 +45,7 @@ export default {
       try {
         await promise
       } catch(error) {
-        this.error = error.name
+        this.cameraError = error.name
       }
     },
     onDecode(decodedString) {
