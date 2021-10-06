@@ -10,6 +10,7 @@
     <div class="fileupload">
       <qrcode-capture @decode="onDecode"></qrcode-capture>
     </div>
+    <p v-if="processing">Processing...</p>
     <p v-if="result != ''">
       Verfied: <b v-if="verifyResult">Verified</b><b v-else>Not verified</b><br/>
       Created: <b>{{ result.cdate }}</b><br/>
@@ -37,7 +38,8 @@ export default {
       error: '',
       cameraError: '',
       verifyResult: false,
-      certificate: cert
+      certificate: cert,
+      processing: false
     }
   },
   methods: {
@@ -50,6 +52,7 @@ export default {
     },
     onDecode(decodedString) {
       console.log('Checking image signature')
+      this.processing = true
       try {
         const compressed = base45.decode(decodedString)
         const input = Buffer.from(compressed)
@@ -64,6 +67,7 @@ export default {
         console.error(error)
         this.error = error.name        
       }
+      this.processing = false
     }
   }
 }
