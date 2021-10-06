@@ -91,3 +91,63 @@ aws cloudformation create-stack --stack-name testdocumentproduction --template-b
 1. Delete the Cloudformation stack 
 2. You may wish to delete the RDS snapshot and Cloudwatch logs
 3. Clean up your KMS key and IAM managed policy
+
+## Producing documents
+The Document Production service can create and track documents produced the Documents page. Documents are produced by calling the API endpoints /api/document and /api/document/object depending on your preferred output format.
+### Document templates
+Document templates are FreeMarker templates that use the supplied templateModel to form the contents. The contents are then converted to a PDF by using the FlyingSaucer library and must meet the requirements of this engine. i.e. The templates must be HTML and support up to CSS 2.0.
+Document templates are created with:
+1. Alias (required): The alias used to refer to the most recent (and active) document template in API calls.
+2. Content (required): A FreeMarker template that is provided the templateModel. Must be strict HTML and supports CSS 2.0 inline stylesheets.
+
+Barcodes can also be created inside the PDFs by using special image tags.
+
+Use the "type" attribute with value: "qrcode" for a QR code. 
+```
+<img src="${templateModel['afield']}" type="qrcode" width="250" height="250" />
+```
+
+Use the "type" attribute with value: "signedqrcode" for a signed QR code. 
+```
+<img src="(KMS key ID to sign with)" type="signedqrcode" width="250" height="250" />
+```
+
+Use the "type" attribute with value: "barcode" for a line barcode 128:
+```
+<img src="${templateModel['afield']}" type="barcode" width="250" height="250" />
+```
+
+### Signature templates
+Signature templates are used to structure signatures applied to signed PDF documents and use the supplied templateModel by using the FreeMarker engine. Whenever a signed PDF document is produced, a signature template is interpretted along with the templateModel to complete the components:
+1. Signatory template (required): Template used for the title of the signature. e.g. "Signed by John Smith" could be templated as "Signed by ${templateModel['fullname']}"
+2. Reason template (required): Template used for the reason for signing. e.g. "Fulfillment of marriage proceedings between ${templateModel['bride']} and ${templateModel['groom']}"
+3. Location (optional): Where the signature took place. This could be a place of business, where an event occurred such as a place of marriage, etc. 
+4. Contact information template (optional): Used to identify what the primary contact is for confirming a signature's legitmacy.
+5. Signature key (required): Which Signing key should be used for the digital signature.
+
+## Verifying signed QR codes in documents
+1. Download certificate to verify signatures.
+2. Convert x509 certificate to PEM to be used by openssl verification.
+```
+openssl x509 -pubkey -in test.cer -outform PEM -out pub.pem
+```
+3. Extract the signature from the QR code and save to a file (e.g. testqr.txt).
+4. Convert QR code content to binary.
+The QR content is in the structure:
+- All Base45 encoded.
+- Contents are compressed using ZLIB.
+- Metadata and the fields that were signed (f).
+- A Base45 encoded signature (sig).
+These steps first convert the QR content from Base45, then decompress it, then extract out the signature to be decoded into a binary form used for verification:
+```
+cat testqr.txt | base45 --decode | zlib-flate -uncompress | jq -r ".sig"  | base45 --decode > sig
+```
+5. Extact the fields from the QR code to verify against the signature (ensuring no trailing new line characters):
+```
+cat testqr.txt | base45 --decode | zlib-flate -uncompress | jq -r --compact-output ".f" | tr -d '\n' > data
+```
+6. Verify the field data signature:
+```
+openssl dgst -sha256 -verify pub.pem -signature sig data
+```
+You should get a message: Verified OK

@@ -47,7 +47,9 @@ import au.gov.qld.bdm.documentproduction.document.entity.DocumentRepository;
 import au.gov.qld.bdm.documentproduction.document.entity.DocumentSignature;
 import au.gov.qld.bdm.documentproduction.document.entity.DocumentSignatureView;
 import au.gov.qld.bdm.documentproduction.document.entity.DocumentView;
+import au.gov.qld.bdm.documentproduction.sign.ContentSignerFactory;
 import au.gov.qld.bdm.documentproduction.sign.SigningService;
+import au.gov.qld.bdm.documentproduction.signaturekey.SignatureKeyService;
 import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKey;
 import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKeyView;
 import au.gov.qld.bdm.documentproduction.template.TemplateService;
@@ -71,12 +73,15 @@ public class DocumentService {
 	private final SigningService signingService;
 	private final DocumentCounterRepository documentCounterRepository;
 	private final Resource[] classpathFonts;
+	private final SignatureKeyService signatureKeyService;
+	private final ContentSignerFactory contentSignerFactory;
 	
 	private List<Resource> fileSystemFonts;
 	
 	@Autowired
 	public DocumentService(DocumentRepository repository, DocumentSignatureService documentSignatureService, TemplateService templateService, SigningService signingService,
-			AuditService auditService, InlineTemplateService inlineTemplateService, @Value("classpath:fonts/*.ttf") Resource[] classpathFonts, DocumentCounterRepository documentCounterRepository) throws IOException {
+			AuditService auditService, InlineTemplateService inlineTemplateService, @Value("classpath:fonts/*.ttf") Resource[] classpathFonts, 
+			DocumentCounterRepository documentCounterRepository, SignatureKeyService signatureKeyService, ContentSignerFactory contentSignerFactory) throws IOException {
 		this.repository = repository;
 		this.documentSignatureService = documentSignatureService;
 		this.templateService = templateService;
@@ -85,6 +90,8 @@ public class DocumentService {
 		this.inlineTemplateService = inlineTemplateService;
 		this.documentCounterRepository = documentCounterRepository;
 		this.classpathFonts = classpathFonts;
+		this.signatureKeyService = signatureKeyService;
+		this.contentSignerFactory = contentSignerFactory;
 		this.fileSystemFonts = saveFontsToFileSystem();
 		verifyFontsExist(fileSystemFonts);
 	}
@@ -300,7 +307,8 @@ public class DocumentService {
 			renderer.getFontResolver().addFont(font.getFile().getPath(), BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
 		}
 		renderer.setDocumentFromString(templated);
-		renderer.getSharedContext().setReplacedElementFactory(new BarcodeElementFactory(renderer.getOutputDevice()));
+		renderer.getSharedContext().setReplacedElementFactory(new BarcodeElementFactory(renderer.getOutputDevice(), document, templateModel, signatureKeyService,
+				contentSignerFactory));
 		renderer.layout();
 		try {
 			renderer.createPDF(os);
