@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p class="error">Camera status: {{ cameraError }}</p>
+    <p class="error" v-if="cameraError != ''">Camera status: {{ cameraError }}</p>
     
     <div v-if="cameraError == ''">
       <div class="stream">
@@ -11,10 +11,10 @@
       <qrcode-capture @decode="onDecode"></qrcode-capture>
     </div>
     <p v-if="result != ''">
+      Verfied: <b v-if="verifyResult">Verified</b><b v-else>Not verified</b>
       Created: <b>{{ result.cdate }}</b><br/>
       Document ID: <b>{{ result.dId }}</b><br/>
       Fields: <b>{{ result.f }}</b><br/>
-      Verfied: <b v-if="verifyResult">Verfied</b><b v-else>Not verified</b>
     </p>
     
     <p>Certificate</p>
