@@ -1,25 +1,25 @@
 <template>
   <div>
-    <p class="error" v-if="cameraError != ''">Camera status: {{ cameraError }}</p>
+    <p class="error" v-if="cameraError != '' && cameraError != 'NotFoundError'">Camera status: {{ cameraError }}</p>
     
-    <div v-if="cameraError == ''">
+    <div v-if="cameraError == '' && result == ''">
       <div class="stream">
         <qrcode-stream @decode="onDecode" @init="onInit" />
       </div>
     </div>
-    <div class="fileupload">
+    <div class="fileupload" v-if="result == ''">
       <qrcode-capture @decode="onDecode"></qrcode-capture>
     </div>
     <p v-if="processing">Processing...</p>
     <p v-if="result != ''">
-      Verfied: <b v-if="verifyResult">Verified</b><b v-else>Not verified</b><br/>
+      Verification: <b class="verified" v-if="verifyResult">Verified</b><b class="notverified" v-else>Not verified</b><br/>
       Created: <b>{{ result.cdate }}</b><br/>
       Document ID: <b>{{ result.dId }}</b><br/>
       Fields: <b>{{ result.f }}</b><br/>
     </p>
-    
+    <button v-if="result != ''" @click="reset">Reset</button>
     <p>Certificate</p>
-    <textarea @change="onDecode" class="certificate" v-model="certificate"></textarea>    
+    <textarea @change="onDecode" class="certificate" v-model="certificate"></textarea>
   </div>
 </template>
 
@@ -49,6 +49,9 @@ export default {
       } catch(error) {
         this.cameraError = error.name
       }
+    },
+    reset() {
+      this.result = ''
     },
     onDecode(decodedString) {
       console.log('Checking image signature')
@@ -80,5 +83,11 @@ export default {
 .certificate {
   width: 41em;
   height: 30em;
+}
+.verified {
+  color: green;
+}
+.notverified {
+  color: red;
 }
 </style>
