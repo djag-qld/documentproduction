@@ -9,9 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,17 +43,11 @@ import au.gov.qld.bdm.documentproduction.document.entity.DocumentCounter;
 import au.gov.qld.bdm.documentproduction.document.entity.DocumentCounterRepository;
 import au.gov.qld.bdm.documentproduction.document.entity.DocumentRepository;
 import au.gov.qld.bdm.documentproduction.document.entity.DocumentSignature;
-import au.gov.qld.bdm.documentproduction.document.entity.DocumentSignatureView;
 import au.gov.qld.bdm.documentproduction.document.entity.DocumentView;
-import au.gov.qld.bdm.documentproduction.sign.ContentSignerFactory;
 import au.gov.qld.bdm.documentproduction.sign.SigningService;
-import au.gov.qld.bdm.documentproduction.sign.repository.SignatureRecordService;
-import au.gov.qld.bdm.documentproduction.signaturekey.SignatureKeyService;
 import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKey;
-import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKeyView;
 import au.gov.qld.bdm.documentproduction.template.TemplateService;
 import au.gov.qld.bdm.documentproduction.template.entity.Template;
-import au.gov.qld.bdm.documentproduction.template.entity.TemplateView;
 import freemarker.template.TemplateException;
 
 @Service
@@ -74,17 +66,14 @@ public class DocumentService {
 	private final SigningService signingService;
 	private final DocumentCounterRepository documentCounterRepository;
 	private final Resource[] classpathFonts;
-	private final SignatureKeyService signatureKeyService;
-	private final ContentSignerFactory contentSignerFactory;
-	private final SignatureRecordService signatureRecordService;
+	private final SignedQRCodeService signedQRCodeService;
 	
 	private List<Resource> fileSystemFonts;
 	
 	@Autowired
 	public DocumentService(DocumentRepository repository, DocumentSignatureService documentSignatureService, TemplateService templateService, SigningService signingService,
 			AuditService auditService, InlineTemplateService inlineTemplateService, @Value("classpath:fonts/*.ttf") Resource[] classpathFonts, 
-			DocumentCounterRepository documentCounterRepository, SignatureKeyService signatureKeyService, ContentSignerFactory contentSignerFactory,
-			SignatureRecordService signatureRecordService) throws IOException {
+			DocumentCounterRepository documentCounterRepository, SignedQRCodeService signedQRCodeService) throws IOException {
 		this.repository = repository;
 		this.documentSignatureService = documentSignatureService;
 		this.templateService = templateService;
@@ -93,9 +82,7 @@ public class DocumentService {
 		this.inlineTemplateService = inlineTemplateService;
 		this.documentCounterRepository = documentCounterRepository;
 		this.classpathFonts = classpathFonts;
-		this.signatureKeyService = signatureKeyService;
-		this.contentSignerFactory = contentSignerFactory;
-		this.signatureRecordService = signatureRecordService;
+		this.signedQRCodeService = signedQRCodeService;
 		this.fileSystemFonts = saveFontsToFileSystem();
 		verifyFontsExist(fileSystemFonts);
 	}
@@ -120,138 +107,12 @@ public class DocumentService {
 			return cb.equal(root.get("agency"), agency);
 		});
 		DataTablesOutput<DocumentView> views = new DataTablesOutput<>();
-		views.setData(all.getData().stream().map(DocumentService::toView).collect(Collectors.toList()));
+		views.setData(all.getData().stream().map(DataTableDocumentView::fromEntity).collect(Collectors.toList()));
 		views.setDraw(all.getDraw());
 		views.setError(all.getError());
 		views.setRecordsFiltered(all.getRecordsFiltered());
 		views.setRecordsTotal(all.getRecordsTotal());
 		return views;
-	}
-	
-	private static DocumentView toView(Document entity) {		
-		return new DocumentView() {
-			private final String createdBy = entity.getCreatedBy();
-			private final Date created = new Date(entity.getCreated().getTime());
-			private final String templateAlias = entity.getTemplate().getAlias();
-			private final Collection<DocumentSignatureView> signatures = entity.getSignatures().stream().map(s -> {
-				return new DocumentSignatureView() {
-					@Override
-					public String getAlias() {
-						return s.getAlias();
-					}
-
-					@Override
-					public String getCreatedBy() {
-						return null;
-					}
-
-					@Override
-					public Date getCreated() {
-						return null;
-					}
-
-					@Override
-					public String getReasonTemplate() {
-						return null;
-					}
-
-					@Override
-					public String getSignatoryTemplate() {
-						return null;
-					}
-
-					@Override
-					public SignatureKeyView getSignatureKey() {
-						return new SignatureKeyView() {
-							@Override
-							public String getAlias() {
-								return s.getSignatureKey().getAlias();
-							}
-
-							@Override
-							public int getVersion() {
-								return s.getSignatureKey().getVersion();
-							}
-
-							@Override
-							public String getCreatedBy() {
-								return s.getSignatureKey().getCreatedBy();
-							}
-
-							@Override
-							public Date getCreated() {
-								return s.getSignatureKey().getCreated();
-							}
-
-							@Override
-							public String getTimestampEndpoint() {
-								return s.getSignatureKey().getTimestampEndpoint();
-							}
-						};
-					}
-
-					@Override
-					public String getLocationTemplate() {
-						return null;
-					}
-
-					@Override
-					public String getContactInfoTemplate() {
-						return null;
-					}
-				};
-			}).collect(Collectors.toList());
-			
-			@Override
-			public String getCreatedBy() {
-				return createdBy;
-			}
-			
-			@Override
-			public Date getCreated() {
-				return created;
-			}
-
-			@Override
-			public TemplateView getTemplate() {
-				return new TemplateView() {
-					@Override
-					public String getAlias() {
-						return templateAlias;
-					}
-
-					@Override
-					public String getCreatedBy() {
-						return null;
-					}
-
-					@Override
-					public Date getCreated() {
-						return null;
-					}
-
-					@Override
-					public String getContent() {
-						return null;
-					}
-				};
-			}
-
-			@Override
-			public Collection<DocumentSignatureView> getSignatures() {
-				return signatures;
-			}
-
-			@Override
-			public String getId() {
-				return entity.getId();
-			}
-
-			@Override
-			public long getCounter() {
-				return entity.getCounter();
-			}
-		};
 	}
 
 	/**
@@ -294,13 +155,13 @@ public class DocumentService {
 
 		try {
 			auditService.audit(AuditBuilder.of("produce").from(credential).target(byId.get().getId(), byId.get().getId(), "document").build());
-			createPdf(byId.get(), templateModel, os);
+			createPdf(credential, byId.get(), templateModel, os);
 		} catch (DocumentException | IOException | TemplateException e) {
 			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
 	
-	private void createPdf(Document document, Map<String, String> templateModel, OutputStream os) throws DocumentException, IOException, TemplateException {
+	private void createPdf(AuditableCredential credential, Document document, Map<String, String> templateModel, OutputStream os) throws DocumentException, IOException, TemplateException {
 		Map<String, Object> formData = templateData(document, templateModel);
 		LOG.info("Creating template of PDF for document: {}", document.getId());
 		String templated = inlineTemplateService.template(document.getTemplate().getId(), String.format(TEMPLATE_WRAPPER_FMT, document.getTemplate().getContent()), formData);
@@ -311,8 +172,7 @@ public class DocumentService {
 			renderer.getFontResolver().addFont(font.getFile().getPath(), BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
 		}
 		renderer.setDocumentFromString(templated);
-		renderer.getSharedContext().setReplacedElementFactory(new BarcodeElementFactory(renderer.getOutputDevice(), document, templateModel, signatureKeyService,
-				contentSignerFactory, signatureRecordService));
+		renderer.getSharedContext().setReplacedElementFactory(new BarcodeElementFactory(renderer.getOutputDevice(), credential, document, templateModel, signedQRCodeService));
 		renderer.layout();
 		try {
 			renderer.createPDF(os);
@@ -383,6 +243,6 @@ public class DocumentService {
 		document.setAgency(credential.getAgency());
 		document.setTemplate(template.get());
 		document.setCounter(documentCounterRepository.save(new DocumentCounter()).getCounter());
-		createPdf(document, Collections.emptyMap(), os);
+		createPdf(credential, document, Collections.emptyMap(), os);
 	}
 }

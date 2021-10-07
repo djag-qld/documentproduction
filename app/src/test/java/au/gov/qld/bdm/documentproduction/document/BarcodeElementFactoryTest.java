@@ -20,13 +20,12 @@ import org.xhtmlrenderer.pdf.ITextImageElement;
 import org.xhtmlrenderer.pdf.ITextOutputDevice;
 import org.xhtmlrenderer.render.BlockBox;
 
+import au.gov.qld.bdm.documentproduction.audit.AuditableCredential;
 import au.gov.qld.bdm.documentproduction.document.entity.Document;
-import au.gov.qld.bdm.documentproduction.sign.ContentSignerFactory;
-import au.gov.qld.bdm.documentproduction.sign.repository.SignatureRecordService;
-import au.gov.qld.bdm.documentproduction.signaturekey.SignatureKeyService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BarcodeElementFactoryTest {
+	private static final String KEY_ALIAS = "some key alias";
 	private static final int WIDTH = 123;
 	private static final int HEIGHT = 456;
 	
@@ -39,9 +38,8 @@ public class BarcodeElementFactoryTest {
 	@Mock UserAgentCallback uac;
 	@Mock Element barcodeElement;
 	@Mock Document document;
-	@Mock SignatureKeyService signatureKeyService;
-	@Mock ContentSignerFactory contentSignerFactory;
-	@Mock SignatureRecordService signatureRecordService;
+	@Mock SignedQRCodeService signedQRCodeService;
+	@Mock AuditableCredential credential;
 	
 	@Before
 	public void setUp() {
@@ -51,12 +49,24 @@ public class BarcodeElementFactoryTest {
 		when(barcodeElement.getNodeName()).thenReturn(BarcodeElementFactory.IMG_TAG);
 		when(box.getElement()).thenReturn(barcodeElement);
 		
-		factory = new BarcodeElementFactory(outputDevice, document, templateModel, signatureKeyService, contentSignerFactory, signatureRecordService);
+		factory = new BarcodeElementFactory(outputDevice, credential, document, templateModel, signedQRCodeService);
 	}
 	
 	@Test
 	public void shouldCreateQRCodeWhenTriggeredFromBarcodeElementWithQRType() {
 		when(barcodeElement.getAttribute("type")).thenReturn(BarcodeElementFactory.QRCODE_IMG_TYPE);
+		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, WIDTH, HEIGHT);
+		assertThat(replaced instanceof ITextImageElement, is(true));
+		ITextImageElement image = (ITextImageElement) replaced;
+		assertThat(image.getImage().getWidth(), is(WIDTH));
+		assertThat(image.getImage().getHeight(), is(HEIGHT));
+	}
+	
+	@Test
+	public void shouldCreateQRCodeWhenTriggeredFromBarcodeElementWithSignedQRType() {
+		when(barcodeElement.getAttribute("src")).thenReturn(KEY_ALIAS);
+		when(signedQRCodeService.create(credential, document, KEY_ALIAS, templateModel)).thenReturn("some qr code content");
+		when(barcodeElement.getAttribute("type")).thenReturn(BarcodeElementFactory.SIGNED_QRCODE_IMG_TYPE);
 		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, WIDTH, HEIGHT);
 		assertThat(replaced instanceof ITextImageElement, is(true));
 		ITextImageElement image = (ITextImageElement) replaced;
