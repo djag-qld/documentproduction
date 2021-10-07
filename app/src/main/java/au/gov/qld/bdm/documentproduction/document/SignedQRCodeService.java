@@ -39,25 +39,28 @@ public class SignedQRCodeService {
 	}
 
 	public String create(AuditableCredential credential, Document document, String signatureKeyAlias, Map<String, String> templateModel) {
-		Optional<SignatureKey> keyForAlias = signatureKeyService.findKeyForAlias(credential.getAgency(), signatureKeyAlias);
-		if (!keyForAlias.isPresent()) {
-			throw new IllegalArgumentException("No signature key available for that src");
-		}
-		
 		SignedQRContent qrContent = new SignedQRContent();
 		qrContent.setF(new TreeMap<>(templateModel));
-		qrContent.setKId(keyForAlias.get().getAlias() + ":" + keyForAlias.get().getVersion());
 		qrContent.setDId(document.getId());
 		qrContent.setVer(SIGNED_QRCODE_VERSION);
 		qrContent.setCDate(new LocalDate().toString("yyyy-MM-dd"));
 		try {
-			ContentSigner contentSigner = contentSignerFactory.create(keyForAlias.get());
-			IOUtils.write(qrContent.getSignatureContent(), contentSigner.getOutputStream(), StandardCharsets.UTF_8);
-			signatureRecordService.storeSignature(contentSigner.getSignature(), contentSigner.getAlgorithmIdentifier().getAlgorithm().getId(), 
-					keyForAlias.get().getKmsId(), credential.getAgency());
+			if (!templateModel.isEmpty()) {
+				Optional<SignatureKey> keyForAlias = signatureKeyService.findKeyForAlias(credential.getAgency(), signatureKeyAlias);
+				if (!keyForAlias.isPresent()) {
+					throw new IllegalArgumentException("No signature key available for that src");
+				}
+				
+				ContentSigner contentSigner = contentSignerFactory.create(keyForAlias.get());
+				IOUtils.write(qrContent.getSignatureContent(), contentSigner.getOutputStream(), StandardCharsets.UTF_8);
+				signatureRecordService.storeSignature(contentSigner.getSignature(), contentSigner.getAlgorithmIdentifier().getAlgorithm().getId(), 
+						keyForAlias.get().getKmsId(), credential.getAgency());
+				
+				String encodedSignature = Base45.getEncoder().encodeToString(contentSigner.getSignature());
+				qrContent.setKId(keyForAlias.get().getAlias() + ":" + keyForAlias.get().getVersion());
+				qrContent.setSig(encodedSignature);
+			}
 			
-			String encodedSignature = Base45.getEncoder().encodeToString(contentSigner.getSignature());
-			qrContent.setSig(encodedSignature);
 			return compress(qrContent.getAllContent().getBytes(StandardCharsets.UTF_8));
 		} catch (IOException e) {
 			throw new IllegalStateException(e.getMessage(), e);

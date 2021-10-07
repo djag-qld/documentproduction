@@ -2,9 +2,12 @@ package au.gov.qld.bdm.documentproduction.document;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.zip.Inflater;
@@ -89,6 +92,22 @@ public class SignedQRCodeServiceTest {
 		
 		verify(signatureRecordService).storeSignature(contentSigner.getSignature(), contentSigner.getAlgorithmIdentifier().getAlgorithm().getId(), 
 				signatureKey.getKmsId(), credential.getAgency());
+	}
+	
+	// Effectively there is nothing to sign against when there's no template data. 
+	// This also prevents recording signatures when doing document previews. 
+	@Test
+	public void shouldCreateEncodedAndCompressedAndQRContentWithoutSignatureWhenTemplateModelEmpty() throws Exception {
+		templateModel = Collections.emptyMap();
+		String qrContent = signedQRCodeService.create(credential, document, keyAlias, templateModel);
+		
+		byte[] decoded = Base45.getDecoder().decode(qrContent);
+		String inflated = inflate(decoded);
+		SignedQRContent content = new Gson().fromJson(inflated, SignedQRContent.class); 
+		assertThat(content.getF(), is(templateModel));
+		
+		assertThat(content.getSig(), nullValue());
+		verifyNoInteractions(signatureRecordService, signatureKeyService);
 	}
 
 	private String inflate(byte[] decoded) throws Exception {
