@@ -126,6 +126,9 @@ Signature templates are used to structure signatures applied to signed PDF docum
 5. Signature key (required): Which Signing key should be used for the digital signature.
 
 ## Verifying signed QR codes in documents
+Check out the web based demonstration client under client/demo in this repository.
+
+Alternatively, you can verify from the command line using OpenSSL as well.
 1. Download certificate to verify signatures.
 2. Convert x509 certificate to PEM to be used by openssl verification.
 ```
