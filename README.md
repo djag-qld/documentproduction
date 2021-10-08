@@ -145,11 +145,15 @@ The QR content is in the structure:
 - A Base45 encoded signature (sig).
 These steps first convert the QR content from Base45, then decompress it, then extract out the signature to be decoded into a binary form used for verification:
 ```
-cat testqr.txt | base45 --decode | zlib-flate -uncompress | jq -r ".sig"  | base45 --decode > sig
+cat testqr.txt | base45 --decode | zlib-flate -uncompress | jq -r ".sig" | base45 --decode > sig
 ```
-5. Extact the fields from the QR code to verify against the signature (ensuring no trailing new line characters):
+5. Extact all fields except the signature from the QR code to verify against the signature file created above (ensuring no trailing new line characters):
 ```
-cat testqr.txt | base45 --decode | zlib-flate -uncompress | jq -r --compact-output ".f" | tr -d '\n' > data
+cat testqr.txt | base45 --decode | zlib-flate -uncompress | jq -r --compact-output "del(.sig)" | tr -d '\n' > data
+```
+The signature is created against the JSON format of all fields and metadata about the document. As a result, your data file should be a JSON file whose keys are in in the same order. e.g.
+```
+{"f":{"templatevariable":"a value"},"dId":"uuid of document","ver":"1.1.0","cdate":"2021-10-08","kid":"keyalias:keyversion"}
 ```
 6. Verify the field data signature:
 ```
