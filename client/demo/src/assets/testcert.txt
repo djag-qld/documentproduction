@@ -1,3 +1,3 @@
 -----BEGIN CERTIFICATE-----
-Enter certificate here
+Enter public certificate here
 -----END CERTIFICATE-----
