@@ -1,17 +1,31 @@
 package au.gov.qld.bdm.documentproduction.document;
 
+import java.util.Date;
+import java.util.Map;
 import java.util.SortedMap;
+import java.util.TreeMap;
+
+import org.joda.time.LocalDate;
 
 import com.google.gson.Gson;
 
 public class SignedQRContent {
 
-	private SortedMap<String, String> f;
+	private static final String VERSION = "1.1.0";
+
+	private final SortedMap<String, String> f;
+	private final String dId;
+	private final String ver;
+	private final String cdate;
 	private String sig;
 	private String kid;
-	private String dId;
-	private String ver;
-	private String cdate;
+
+	public SignedQRContent(String dId, Date createdDate, Map<String, String> f) {
+		this.dId = dId;
+		this.cdate = new LocalDate(createdDate).toString("yyyy-MM-dd");
+		this.f = new TreeMap<>(f);
+		this.ver = VERSION;
+	}
 
 	public SortedMap<String, String> getF() {
 		return f;
@@ -29,10 +43,6 @@ public class SignedQRContent {
 		return dId;
 	}
 
-	public void setF(SortedMap<String, String> f) {
-		this.f = f;
-	}
-
 	public void setSig(String sig) {
 		this.sig = sig;
 	}
@@ -41,28 +51,12 @@ public class SignedQRContent {
 		this.kid = kId;
 	}
 
-	public String getSignatureContent() {
-		return new Gson().toJson(f);
-	}
-
 	public String getAllContent() {
 		return new Gson().toJson(this);
 	}
 
-	public void setDId(String documentId) {
-		this.dId = documentId;
-	}
-
-	public void setVer(String ver) {
-		this.ver = ver;
-	}
-	
 	public String getVer() {
 		return ver;
-	}
-
-	public void setCDate(String cDate) {
-		this.cdate = cDate;
 	}
 	
 	public String getCDate() {

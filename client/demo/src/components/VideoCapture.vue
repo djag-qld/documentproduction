@@ -18,7 +18,8 @@
       Fields: <b>{{ result.f }}</b><br/>
     </p>
     <button v-if="result != ''" @click="reset">Reset</button>
-    <p>Certificate</p>
+    <hr/>
+    <p>Verification certificate:</p>
     <textarea @change="onDecode" class="certificate" v-model="certificate"></textarea>
   </div>
 </template>
@@ -42,6 +43,9 @@ export default {
       processing: false
     }
   },
+  created() {
+    document.title = 'Demonstration client for QR verficiation'
+  },
   methods: {
     async onInit(promise) {
       try {
@@ -63,7 +67,8 @@ export default {
           this.result = JSON.parse(r)
           const signature = base45.decode(this.result.sig)
           const verifier = crypto.createVerify('rsa-sha256')
-          verifier.update(JSON.stringify(this.result.f))          
+          delete this.result.sig
+          verifier.update(JSON.stringify(this.result))
           this.verifyResult =  verifier.verify(this.certificate, signature, 'binary')
         })
       } catch(error) {

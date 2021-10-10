@@ -5,12 +5,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.zip.Deflater;
 
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.operator.ContentSigner;
-import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +22,6 @@ import nl.minvws.encoding.Base45;
 
 @Service
 public class SignedQRCodeService {
-	private static final String SIGNED_QRCODE_VERSION = "1.0.0";
-	
 	private final SignatureKeyService signatureKeyService;
 	private final ContentSignerFactory contentSignerFactory;
 	private final SignatureRecordService signatureRecordService;
@@ -39,25 +35,21 @@ public class SignedQRCodeService {
 	}
 
 	public String create(AuditableCredential credential, Document document, String signatureKeyAlias, Map<String, String> templateModel) {
-		SignedQRContent qrContent = new SignedQRContent();
-		qrContent.setF(new TreeMap<>(templateModel));
-		qrContent.setDId(document.getId());
-		qrContent.setVer(SIGNED_QRCODE_VERSION);
-		qrContent.setCDate(new LocalDate().toString("yyyy-MM-dd"));
+		SignedQRContent qrContent = new SignedQRContent(document.getId(), document.getCreated(), templateModel);
 		try {
 			if (!templateModel.isEmpty()) {
 				Optional<SignatureKey> keyForAlias = signatureKeyService.findKeyForAlias(credential.getAgency(), signatureKeyAlias);
 				if (!keyForAlias.isPresent()) {
 					throw new IllegalArgumentException("No signature key available for that src");
 				}
+				qrContent.setKId(keyForAlias.get().getAlias() + ":" + keyForAlias.get().getVersion());
 				
 				ContentSigner contentSigner = contentSignerFactory.create(keyForAlias.get());
-				IOUtils.write(qrContent.getSignatureContent(), contentSigner.getOutputStream(), StandardCharsets.UTF_8);
+				IOUtils.write(qrContent.getAllContent(), contentSigner.getOutputStream(), StandardCharsets.UTF_8);
 				signatureRecordService.storeSignature(contentSigner.getSignature(), contentSigner.getAlgorithmIdentifier().getAlgorithm().getId(), 
 						keyForAlias.get().getKmsId(), credential.getAgency());
 				
 				String encodedSignature = Base45.getEncoder().encodeToString(contentSigner.getSignature());
-				qrContent.setKId(keyForAlias.get().getAlias() + ":" + keyForAlias.get().getVersion());
 				qrContent.setSig(encodedSignature);
 			}
 			
@@ -70,7 +62,6 @@ public class SignedQRCodeService {
 	private String compress(byte[] data) throws IOException {
 		Deflater deflater = new Deflater();
 		deflater.setInput(data);
-
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
 		deflater.finish();
 		byte[] buffer = new byte[1024];
