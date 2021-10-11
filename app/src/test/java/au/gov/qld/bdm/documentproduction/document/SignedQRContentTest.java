@@ -23,6 +23,9 @@ public class SignedQRContentTest {
 	public void shouldReturnJsonInConsistentOrderToAllowReliableSignatureVerificationOfRawData() {
 		SignedQRContent content = new SignedQRContent(DOCUMENT_ID, CREATED, FIELDS);
 		content.setKId(KEY_ID);
+		// verify data that's used in client's signature verification
+		assertThat(content.getAllContent(), is("{\"f\":{\"field\":\"field's \\\"value\\\"\"},\"dId\":\"some document id\",\"ver\":\"1.1.0\",\"cdate\":\"2021-10-11\",\"kid\":\"some key id\"}"));
+		
 		content.setSig(SIGNATURE);
 		assertThat(content.getAllContent(), is("{\"f\":{\"field\":\"field's \\\"value\\\"\"},\"dId\":\"some document id\",\"ver\":\"1.1.0\",\"cdate\":\"2021-10-11\",\"sig\":\"some signature\",\"kid\":\"some key id\"}"));
 	}
