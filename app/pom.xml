@@ -293,13 +293,13 @@
 											<id>prepare</id>
 											<phase>package</phase>
 											<configuration>
-													<tasks>
+													<target>
 															<unzip src="${project.build.directory}/${project.build.finalName}.jar" dest="${project.build.directory}/${project.build.finalName}"/>
 															<copy todir="${project.build.directory}/${project.build.finalName}/" overwrite="false">
 																	<fileset dir="${project.basedir}/src/env/awstest" includes=".ebextensions/**"/>
 															</copy>
 															<zip compress="false" destfile="${project.build.directory}/${project.build.finalName}.jar" basedir="${project.build.directory}/${project.build.finalName}"/>
-													</tasks>
+													</target>
 											</configuration>
 											<goals>
 													<goal>run</goal>
@@ -344,13 +344,13 @@
 											<id>prepare</id>
 											<phase>package</phase>
 											<configuration>
-													<tasks>
+													<target>
 															<unzip src="${project.build.directory}/${project.build.finalName}.jar" dest="${project.build.directory}/${project.build.finalName}"/>
 															<copy todir="${project.build.directory}/${project.build.finalName}/" overwrite="false">
 																	<fileset dir="${project.basedir}/src/env/awsprod" includes=".ebextensions/**"/>
 															</copy>
 															<zip compress="false" destfile="${project.build.directory}/${project.build.finalName}.jar" basedir="${project.build.directory}/${project.build.finalName}"/>
-													</tasks>
+													</target>
 											</configuration>
 											<goals>
 													<goal>run</goal>
