@@ -20,8 +20,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
 
 import au.gov.qld.bdm.documentproduction.audit.AuditableCredential;
 import au.gov.qld.bdm.documentproduction.document.entity.Document;
@@ -84,7 +84,7 @@ public class SignedQRCodeServiceTest {
 		
 		byte[] decoded = Base45.getDecoder().decode(qrContent);
 		String inflated = inflate(decoded);
-		SignedQRContent content = new Gson().fromJson(inflated, SignedQRContent.class); 
+		SignedQRContent content = new ObjectMapper().readValue(inflated, SignedQRContent.class); 
 		assertThat(content.getF(), is(templateModel));
 		
 		byte[] decodedSignature = Base45.getDecoder().decode(content.getSig());
@@ -103,7 +103,7 @@ public class SignedQRCodeServiceTest {
 		
 		byte[] decoded = Base45.getDecoder().decode(qrContent);
 		String inflated = inflate(decoded);
-		SignedQRContent content = new Gson().fromJson(inflated, SignedQRContent.class); 
+		SignedQRContent content = new ObjectMapper().readValue(inflated, SignedQRContent.class);
 		assertThat(content.getF(), is(templateModel));
 		
 		assertThat(content.getSig(), nullValue());

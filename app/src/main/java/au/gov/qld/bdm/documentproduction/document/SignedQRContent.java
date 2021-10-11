@@ -19,32 +19,41 @@ public class SignedQRContent {
 	private static final String VERSION = "1.1.0";
 
 	@JsonProperty(index = 0, value = "f")
-	private final SortedMap<String, String> f;
+	private final SortedMap<String, String> fieldsFromTemplateModel;
 	@JsonProperty(index = 1, value = "dId")
-	private final String dId;
+	private final String documentId;
 	@JsonProperty(index = 2, value = "ver")
-	private final String ver;
+	private final String qrCodeVersion;
 	@JsonProperty(index = 3, value = "cdate")
-	private final String cdate;
+	private final String documentCreatedDate;
 	@JsonProperty(index = 4, value = "sig")
-	private String sig;
+	private String signatureOfAllFields;
 	@JsonProperty(index = 5, value = "kid")
-	private String kid;
+	private String keyAliasId;
+	
+	// For ObjectMapper
+	@SuppressWarnings("unused")
+	private SignedQRContent() {
+		this.documentId = null;
+		this.fieldsFromTemplateModel = null;
+		this.qrCodeVersion = null;
+		this.documentCreatedDate = null;
+	}
 
 	@JsonIgnore
 	public SignedQRContent(String dId, Date createdDate, Map<String, String> f) {
-		this.dId = dId;
-		this.cdate = new LocalDate(createdDate).toString("yyyy-MM-dd");
-		this.f = new TreeMap<>(f);
-		this.ver = VERSION;
+		this.documentId = dId;
+		this.documentCreatedDate = new LocalDate(createdDate).toString("yyyy-MM-dd");
+		this.fieldsFromTemplateModel = new TreeMap<>(f);
+		this.qrCodeVersion = VERSION;
 	}
 
 	public void setSig(String sig) {
-		this.sig = sig;
+		this.signatureOfAllFields = sig;
 	}
 
 	public void setKId(String kId) {
-		this.kid = kId;
+		this.keyAliasId = kId;
 	}
 
 	@JsonIgnore
@@ -58,11 +67,11 @@ public class SignedQRContent {
 
 	@JsonIgnore
 	public Map<String, String> getF() {
-		return f;
+		return fieldsFromTemplateModel;
 	}
 
 	@JsonIgnore
 	public String getSig() {
-		return sig;
+		return signatureOfAllFields;
 	}
 }
