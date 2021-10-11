@@ -15,7 +15,11 @@
       Verification: <b class="verified" v-if="verifyResult">Verified</b><b class="notverified" v-else>Not verified</b><br/>
       Created: <b>{{ result.cdate }}</b><br/>
       Document ID: <b>{{ result.dId }}</b><br/>
-      Fields: <b>{{ result.f }}</b><br/>
+      <ul>
+        <li v-for="(f, fname) in result.f" v-bind:key="f">
+          {{ fname }}: <b>{{ f }}</b>
+        </li>
+      </ul>
     </p>
     <button v-if="result != ''" @click="reset">Reset</button>
     <hr/>
