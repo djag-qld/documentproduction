@@ -70,7 +70,7 @@ public class BarcodeElementFactory extends ITextReplacedElementFactory {
 	
 	private ReplacedElement createQRCode(int width, int height, String content) {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		QRCode.from(content).to(ImageType.PNG).writeTo(os);
+		QRCode.from(content).to(ImageType.PNG).withSize(width, height).writeTo(os);
 		try {
 			return convertToScaledITextImage(Image.getInstance(os.toByteArray()), width, height);
 		} catch (BadElementException | IOException e) {

@@ -182,8 +182,8 @@ public class DocumentServiceTest {
 	private void verifyHasImage(PDDocument pdDocument) throws IOException {
 		List<RenderedImage> imagesFromPDF = getImagesFromPDF(pdDocument);
 		assertThat(imagesFromPDF.size(), is(1));
-		assertThat(imagesFromPDF.get(0).getWidth(), is(125));
-		assertThat(imagesFromPDF.get(0).getHeight(), is(125));
+		assertThat(imagesFromPDF.get(0).getWidth(), is(24000));
+		assertThat(imagesFromPDF.get(0).getHeight(), is(24000));
 		pdDocument.close();
 	}
 
