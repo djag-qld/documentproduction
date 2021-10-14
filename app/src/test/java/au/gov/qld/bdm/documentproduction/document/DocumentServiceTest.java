@@ -115,7 +115,7 @@ public class DocumentServiceTest {
 		signatureService.save(credential, signatureAlias, signatureKeyAlias, 1, "reason template", "signatory template", "location template", "contact info template");
 		
 		String templateAlias = RandomStringUtils.randomAlphabetic(10);
-		String template = "<html>test ${templateModel['vara']} <br/><img src='" + signatureKeyAlias + "' type='signedqrcode' width='250' height='250' /></html>";
+		String template = "<html>test ${templateModel['vara']} <br/><img src='" + signatureKeyAlias + "' type='signedqrcode' width='250' height='250' qrpixels='500' /></html>";
 		templateService.save(credential, templateAlias, template);
 		
 		Map<String, String> templateModel = new HashMap<>();
@@ -127,7 +127,7 @@ public class DocumentServiceTest {
 		
 		FileUtils.writeByteArrayToFile(new File(System.getProperty("java.io.tmpdir") + File.separator + "testsignedqr.pdf"), os.toByteArray());
 		verifyHasText(PDDocument.load(os.toByteArray()));
-		verifyHasImage(PDDocument.load(os.toByteArray()));
+		verifyHasImage(PDDocument.load(os.toByteArray()), 500);
 		
 		DataTablesInput dataTablesInput = new DataTablesInput();
 		dataTablesInput.setLength(1);
@@ -152,7 +152,7 @@ public class DocumentServiceTest {
 
 		FileUtils.writeByteArrayToFile(new File(System.getProperty("java.io.tmpdir") + File.separator + "testqr.pdf"), os.toByteArray());
 		verifyHasText(PDDocument.load(os.toByteArray()));
-		verifyHasImage(PDDocument.load(os.toByteArray()));
+		verifyHasImage(PDDocument.load(os.toByteArray()), 125);
 	}
 	
 	private List<RenderedImage> getImagesFromPDF(PDDocument document) throws IOException {
@@ -179,11 +179,11 @@ public class DocumentServiceTest {
 		return images;
 	}
 	
-	private void verifyHasImage(PDDocument pdDocument) throws IOException {
+	private void verifyHasImage(PDDocument pdDocument, int size) throws IOException {
 		List<RenderedImage> imagesFromPDF = getImagesFromPDF(pdDocument);
 		assertThat(imagesFromPDF.size(), is(1));
-		assertThat(imagesFromPDF.get(0).getWidth(), is(24000));
-		assertThat(imagesFromPDF.get(0).getHeight(), is(24000));
+		assertThat(imagesFromPDF.get(0).getWidth(), is(size));
+		assertThat(imagesFromPDF.get(0).getHeight(), is(size));
 		pdDocument.close();
 	}
 

@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.ReplacedElement;
@@ -26,12 +27,15 @@ import net.glxn.qrgen.core.image.ImageType;
 import net.glxn.qrgen.javase.QRCode;
 
 public class BarcodeElementFactory extends ITextReplacedElementFactory {
+	static final int QRCODE_DEFAULT_PIXELS = 125; // default from QRCode library
+	static final int QRCODE_MAX_PIXELS = 3000; // getting higher than this starts to really slow down the creation.
 	public static final String IMG_TYPE_ATTRIBUTE = "type";
 	public static final String BARCODE_IMG_TYPE = "barcode";
 	public static final String QRCODE_IMG_TYPE = "qrcode";
 	public static final String SIGNED_QRCODE_IMG_TYPE = "signedqrcode";
 	public static final String IMG_TAG = "img";
 	public static final String SRC_ATTRIBUTE = "src";
+	private static final String IMG_QR_PIXELS_ATTRIBUTE = "qrpixels";
 	private final Document document;
 	private final Map<String, String> templateModel;
 	private final SignedQRCodeService signedQRCodeService;
@@ -56,23 +60,33 @@ public class BarcodeElementFactory extends ITextReplacedElementFactory {
 			return createBarcode128(cssWidth, cssHeight, element.getAttribute(SRC_ATTRIBUTE));
 		}
 		
+		// allow QR code pixels to be specified in the template separately for flexibility of expected output's length.
+		int qrPixels = QRCODE_DEFAULT_PIXELS;
+		if (StringUtils.isNotBlank(element.getAttribute(IMG_QR_PIXELS_ATTRIBUTE))) {
+			qrPixels = Integer.parseInt(element.getAttribute(IMG_QR_PIXELS_ATTRIBUTE));
+			if (qrPixels > QRCODE_MAX_PIXELS || qrPixels < 1) {
+				throw new IllegalArgumentException("Invalid qrpixels attribute");
+			}
+		}
+		
 		if (QRCODE_IMG_TYPE.equals(element.getAttribute(IMG_TYPE_ATTRIBUTE))) {
-			return createQRCode(cssWidth, cssHeight, element.getAttribute(SRC_ATTRIBUTE));
+			return createQRCode(qrPixels, cssWidth, cssHeight, element.getAttribute(SRC_ATTRIBUTE));
 		}
 		
 		if (SIGNED_QRCODE_IMG_TYPE.equals(element.getAttribute(IMG_TYPE_ATTRIBUTE))) {
 			String qrContent = signedQRCodeService.create(credential, document, element.getAttribute(SRC_ATTRIBUTE), templateModel);
-			return createQRCode(cssWidth, cssHeight, qrContent );			
+			return createQRCode(qrPixels, cssWidth, cssHeight, qrContent);
 		}
 
 		return super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
 	}
 	
-	private ReplacedElement createQRCode(int width, int height, String content) {
+	private ReplacedElement createQRCode(int qrPixels, int width, int height, String content) {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		QRCode.from(content).to(ImageType.PNG).withSize(width, height).writeTo(os);
+		QRCode.from(content).to(ImageType.PNG).withSize(qrPixels, qrPixels).writeTo(os);
 		try {
-			return convertToScaledITextImage(Image.getInstance(os.toByteArray()), width, height);
+			Image image = Image.getInstance(os.toByteArray());
+			return convertToScaledITextImage(image, width, height);
 		} catch (BadElementException | IOException e) {
 			throw new IllegalArgumentException(e.getMessage(), e);
 		}
