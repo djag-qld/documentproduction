@@ -110,13 +110,15 @@ Document templates are created with:
 Barcodes can also be created inside the PDFs by using special image tags.
 
 Use the "type" attribute with value: "qrcode" for a QR code. 
+The QR code generation also supports variable pixels to improve the quality of the QR code. The number of pixels impacts the size of the PDF and time to compute.
+Default qrpixels: 125 
 ```
-<img src="${templateModel['afield']}" type="qrcode" width="250" height="250" />
+<img src="${templateModel['afield']}" type="qrcode" qrpixels="250" width="250" height="250" />
 ```
 
 Use the "type" attribute with value: "signedqrcode" for a signed QR code. 
 ```
-<img src="(Signature key alias)" type="signedqrcode" width="250" height="250" />
+<img src="(Signature key alias)" type="signedqrcode" qrpixels="500" width="250" height="250" />
 ```
 
 Use the "type" attribute with value: "barcode" for a line barcode 128:

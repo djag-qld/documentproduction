@@ -16,18 +16,21 @@ import org.w3c.dom.Element;
 import org.xhtmlrenderer.extend.ReplacedElement;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.layout.LayoutContext;
+import org.xhtmlrenderer.pdf.ITextFSImage;
 import org.xhtmlrenderer.pdf.ITextImageElement;
 import org.xhtmlrenderer.pdf.ITextOutputDevice;
 import org.xhtmlrenderer.render.BlockBox;
 
 import au.gov.qld.bdm.documentproduction.audit.AuditableCredential;
 import au.gov.qld.bdm.documentproduction.document.entity.Document;
+import net.glxn.qrgen.core.image.ImageType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BarcodeElementFactoryTest {
 	private static final String KEY_ALIAS = "some key alias";
-	private static final int WIDTH = 123;
-	private static final int HEIGHT = 456;
+	private static final int SCALED_WIDTH = 123;
+	private static final int SCALED_HEIGHT = 456;
+	private static final int DATA_LENGTH = 375;
 	
 	BarcodeElementFactory factory;
 	Map<String, String> templateModel;
@@ -55,11 +58,11 @@ public class BarcodeElementFactoryTest {
 	@Test
 	public void shouldCreateQRCodeWhenTriggeredFromBarcodeElementWithQRType() {
 		when(barcodeElement.getAttribute("type")).thenReturn(BarcodeElementFactory.QRCODE_IMG_TYPE);
-		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, WIDTH, HEIGHT);
+		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, SCALED_WIDTH, SCALED_HEIGHT);
 		assertThat(replaced instanceof ITextImageElement, is(true));
 		ITextImageElement image = (ITextImageElement) replaced;
-		assertThat(image.getImage().getWidth(), is(WIDTH));
-		assertThat(image.getImage().getHeight(), is(HEIGHT));
+		assertThat(image.getImage().getWidth(), is(SCALED_WIDTH));
+		assertThat(image.getImage().getHeight(), is(SCALED_HEIGHT));
 	}
 	
 	@Test
@@ -67,20 +70,76 @@ public class BarcodeElementFactoryTest {
 		when(barcodeElement.getAttribute("src")).thenReturn(KEY_ALIAS);
 		when(signedQRCodeService.create(credential, document, KEY_ALIAS, templateModel)).thenReturn("some qr code content");
 		when(barcodeElement.getAttribute("type")).thenReturn(BarcodeElementFactory.SIGNED_QRCODE_IMG_TYPE);
-		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, WIDTH, HEIGHT);
+		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, SCALED_WIDTH, SCALED_HEIGHT);
 		assertThat(replaced instanceof ITextImageElement, is(true));
 		ITextImageElement image = (ITextImageElement) replaced;
-		assertThat(image.getImage().getWidth(), is(WIDTH));
-		assertThat(image.getImage().getHeight(), is(HEIGHT));
+		assertThat(image.getImage().getWidth(), is(SCALED_WIDTH));
+		assertThat(image.getImage().getHeight(), is(SCALED_HEIGHT));
+	}
+	
+	@Test
+	public void shouldCreateSignedQRCodeWithSpecifiedPixels() {
+		when(barcodeElement.getAttribute("src")).thenReturn(KEY_ALIAS);
+		when(barcodeElement.getAttribute("imagetype")).thenReturn(String.valueOf(ImageType.BMP)); // no compression makes it more reliable to test
+		when(barcodeElement.getAttribute("qrpixels")).thenReturn(String.valueOf(BarcodeElementFactory.QRCODE_MAX_PIXELS));
+		when(signedQRCodeService.create(credential, document, KEY_ALIAS, templateModel)).thenReturn("some qr code content");
+		when(barcodeElement.getAttribute("type")).thenReturn(BarcodeElementFactory.SIGNED_QRCODE_IMG_TYPE);
+		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, SCALED_WIDTH, SCALED_HEIGHT);
+		assertThat(replaced instanceof ITextImageElement, is(true));
+		ITextImageElement image = (ITextImageElement) replaced;
+		assertThat(image.getImage().getWidth(), is(SCALED_WIDTH));
+		assertThat(image.getImage().getHeight(), is(SCALED_HEIGHT));
+		assertThat(((ITextFSImage)image.getImage()).getImage().getRawData().length, is(DATA_LENGTH * BarcodeElementFactory.QRCODE_MAX_PIXELS));
+	}
+	
+	@Test
+	public void shouldCreateQRCodeWithSpecifiedPixels() {
+		when(barcodeElement.getAttribute("src")).thenReturn("qr value");
+		when(barcodeElement.getAttribute("imagetype")).thenReturn(String.valueOf(ImageType.BMP)); // no compression makes it more reliable to test
+		when(barcodeElement.getAttribute("qrpixels")).thenReturn(String.valueOf(BarcodeElementFactory.QRCODE_MAX_PIXELS));
+		when(barcodeElement.getAttribute("type")).thenReturn(BarcodeElementFactory.QRCODE_IMG_TYPE);
+		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, SCALED_WIDTH, SCALED_HEIGHT);
+		assertThat(replaced instanceof ITextImageElement, is(true));
+		ITextImageElement image = (ITextImageElement) replaced;
+		assertThat(image.getImage().getWidth(), is(SCALED_WIDTH));
+		assertThat(image.getImage().getHeight(), is(SCALED_HEIGHT));
+		assertThat(((ITextFSImage)image.getImage()).getImage().getRawData().length, is(DATA_LENGTH * BarcodeElementFactory.QRCODE_MAX_PIXELS));
+	}
+	
+	@Test
+	public void shouldCreateQRCodeWithSpecifiedImageType() {
+		when(barcodeElement.getAttribute("src")).thenReturn("qr value");
+		when(barcodeElement.getAttribute("imagetype")).thenReturn(String.valueOf(ImageType.BMP));
+		when(barcodeElement.getAttribute("type")).thenReturn(BarcodeElementFactory.QRCODE_IMG_TYPE);
+		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, SCALED_WIDTH, SCALED_HEIGHT);
+		assertThat(replaced instanceof ITextImageElement, is(true));
+		ITextImageElement image = (ITextImageElement) replaced;
+		assertThat(image.getImage().getWidth(), is(SCALED_WIDTH));
+		assertThat(image.getImage().getHeight(), is(SCALED_HEIGHT));
+		assertThat(((ITextFSImage)image.getImage()).getImage().getRawData().length, is(2000));
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldThrowExceptoinWhenQRCodePixelsTooHigh() {
+		when(barcodeElement.getAttribute("qrpixels")).thenReturn(String.valueOf(BarcodeElementFactory.QRCODE_MAX_PIXELS + 1));
+		when(barcodeElement.getAttribute("type")).thenReturn(BarcodeElementFactory.SIGNED_QRCODE_IMG_TYPE);
+		factory.createReplacedElement(c, box, uac, SCALED_WIDTH, SCALED_HEIGHT);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldThrowExceptoinWhenQRCodePixelsInvalid() {
+		when(barcodeElement.getAttribute("qrpixels")).thenReturn(String.valueOf(0));
+		when(barcodeElement.getAttribute("type")).thenReturn(BarcodeElementFactory.SIGNED_QRCODE_IMG_TYPE);
+		factory.createReplacedElement(c, box, uac, SCALED_WIDTH, SCALED_HEIGHT);
 	}
 
 	@Test
 	public void shouldCreateBarcodeWhenTriggeredFromBarcodeElement() {
-		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, WIDTH, HEIGHT);
+		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, SCALED_WIDTH, SCALED_HEIGHT);
 		assertThat(replaced instanceof ITextImageElement, is(true));
 		ITextImageElement image = (ITextImageElement) replaced;
-		assertThat(image.getImage().getWidth(), is(WIDTH));
-		assertThat(image.getImage().getHeight(), is(HEIGHT));
+		assertThat(image.getImage().getWidth(), is(SCALED_WIDTH));
+		assertThat(image.getImage().getHeight(), is(SCALED_HEIGHT));
 	}
 	
 	@Test
@@ -95,7 +154,7 @@ public class BarcodeElementFactoryTest {
 	@Test
 	public void shouldNotCreateBarcodeWhenNotTriggeredFromBarcodeElement() {
 		when(barcodeElement.getNodeName()).thenReturn("other tag");
-		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, WIDTH, HEIGHT);
+		ReplacedElement replaced = factory.createReplacedElement(c, box, uac, SCALED_WIDTH, SCALED_HEIGHT);
 		assertThat(replaced instanceof ITextImageElement, is(false));
 	}
 }
