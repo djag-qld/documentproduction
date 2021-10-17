@@ -1,5 +1,5 @@
 # Document Production
-This service is used to sign PDFs with digital signatures. 
+This service is used to sign PDFs with digital signatures.
 The service also produces documents from templates which can include signed QR codes that are used to validate the integrity of digital and printed documents.
 
 The digital signatures prevent the PDF from being modified without subsequently invalidating the signature and QR code since the signature is based off the content of the PDF and template data.
@@ -108,20 +108,32 @@ Document templates are created with:
 2. Content (required): A FreeMarker template that is provided the templateModel. Must be strict HTML and supports CSS 2.0 inline stylesheets.
 
 Barcodes can also be created inside the PDFs by using special image tags.
+```
+<img src="..." type="..." qrpixels="..." imagetype="..." width="..." height="..." />
+```
+Use the "type" attribute with value: "qrcode" for a QR code:
+| type | Description | Attribute | Values | Required |
+| :---: | :---: | :---: | :---: | :---: |
+| barcode | Line barcode 128 | src | Data to encode as barcode. E.g. using template data: "${templateModel['afield']}" | Yes |
+| | | width | Scaled width in pixels | Yes |
+| | | height | Scaled width in pixels | Yes |
+| qrcode | Matrix barcode | src | Data to encode as barcode. E.g. using template data: "${templateModel['afield']}" | Yes |
+| | | width | Scaled width in pixels. Make sure width and height are the same for QR codes. | Yes |
+| | | height | Scaled width in pixels | Yes |
+| | | imagetype | QR Code image type to allow lossy or lossless formats. Default value "png". Accepts "bmp", "jpg", "png" and "gif". | No |
+| | | qrpixels | Pixels allocated to the barcode. Expected data size should determine the size. Default "125". Maximum "3000". | No |
+| signedqrcode | Matrix barcode | src | Signature key alias | Yes |
+| | | width | Scaled width in pixels. Make sure width and height are the same for QR codes. | Yes |
+| | | height | Scaled width in pixels | Yes |
+| | | imagetype | QR Code image type to allow lossy or lossless formats. Default value "png". Accepts "bmp", "jpg", "png" and "gif". | No |
+| | | qrpixels | Pixels allocated to the barcode. Expected data size should determine the size. Default "125". Maximum "3000". | No |
 
-Use the "type" attribute with value: "qrcode" for a QR code. 
-The QR code generation also supports variable pixels to improve the quality of the QR code. The number of pixels impacts the size of the PDF and time to compute.
-Default qrpixels: 125 
+Example of a signed QR code:
 ```
-<img src="${templateModel['afield']}" type="qrcode" qrpixels="250" width="250" height="250" />
+<img src="(Signature key alias)" type="signedqrcode" imagetype="png" qrpixels="500" width="250" height="250" />
 ```
 
-Use the "type" attribute with value: "signedqrcode" for a signed QR code. 
-```
-<img src="(Signature key alias)" type="signedqrcode" qrpixels="500" width="250" height="250" />
-```
-
-Use the "type" attribute with value: "barcode" for a line barcode 128:
+Example of a line barcode 128:
 ```
 <img src="${templateModel['afield']}" type="barcode" width="250" height="250" />
 ```
