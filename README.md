@@ -1,5 +1,10 @@
 # Document Production
-This service is used to sign PDFs with digital signatures. The digital signatures prevent the PDF from being modified without subsequently invalidating the signature since the signature is based off the content of the PDF itself. This service also supports generating PDFs based on templates and provided variables to pre-populate them.
+This service is used to sign PDFs with digital signatures. 
+The service also produces documents from templates which can include signed QR codes that are used to validate the integrity of digital and printed documents.
+
+The digital signatures prevent the PDF from being modified without subsequently invalidating the signature and QR code since the signature is based off the content of the PDF and template data.
+
+This service is designed to be reusable through agency data segregation.
 
 ## Key features
 1. Web administration portal integrated with CAS https://github.com/apereo/cas for authentication
