@@ -3,6 +3,7 @@ package au.gov.qld.bdm.documentproduction.document;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +37,7 @@ public class BarcodeElementFactory extends ITextReplacedElementFactory {
 	public static final String IMG_TAG = "img";
 	public static final String SRC_ATTRIBUTE = "src";
 	private static final String IMG_QR_PIXELS_ATTRIBUTE = "qrpixels";
+	private static final String IMG_QR_TYPE_ATTRIBUTE = "imagetype";
 	private final Document document;
 	private final Map<String, String> templateModel;
 	private final SignedQRCodeService signedQRCodeService;
@@ -69,21 +71,26 @@ public class BarcodeElementFactory extends ITextReplacedElementFactory {
 			}
 		}
 		
+		ImageType imageType = ImageType.PNG;
+		if (StringUtils.isNotBlank(element.getAttribute(IMG_QR_TYPE_ATTRIBUTE))) {
+			imageType = ImageType.valueOf(element.getAttribute(IMG_QR_TYPE_ATTRIBUTE).toUpperCase(Locale.getDefault()));
+		}
+		
 		if (QRCODE_IMG_TYPE.equals(element.getAttribute(IMG_TYPE_ATTRIBUTE))) {
-			return createQRCode(qrPixels, cssWidth, cssHeight, element.getAttribute(SRC_ATTRIBUTE));
+			return createQRCode(imageType, qrPixels, cssWidth, cssHeight, element.getAttribute(SRC_ATTRIBUTE));
 		}
 		
 		if (SIGNED_QRCODE_IMG_TYPE.equals(element.getAttribute(IMG_TYPE_ATTRIBUTE))) {
 			String qrContent = signedQRCodeService.create(credential, document, element.getAttribute(SRC_ATTRIBUTE), templateModel);
-			return createQRCode(qrPixels, cssWidth, cssHeight, qrContent);
+			return createQRCode(imageType, qrPixels, cssWidth, cssHeight, qrContent);
 		}
 
 		return super.createReplacedElement(c, box, uac, cssWidth, cssHeight);
 	}
 	
-	private ReplacedElement createQRCode(int qrPixels, int width, int height, String content) {
+	private ReplacedElement createQRCode(ImageType imageType, int qrPixels, int width, int height, String content) {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		QRCode.from(content).to(ImageType.PNG).withSize(qrPixels, qrPixels).writeTo(os);
+		QRCode.from(content).to(imageType).withSize(qrPixels, qrPixels).writeTo(os);
 		try {
 			Image image = Image.getInstance(os.toByteArray());
 			return convertToScaledITextImage(image, width, height);
