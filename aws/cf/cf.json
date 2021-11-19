@@ -83,9 +83,108 @@
 			"Type": "String",
 			"Description": "WebACL for WAF",
 			"AllowedPattern": "arn:aws:wafv2:.+:.+:regional/webacl/.+/.+"
+		},
+		"BulkProcessingBucketName": {
+			"Type": "String",
+			"Description": "Name of the bucket used to process bulk document production and send output to"
 		}
 	},
 	"Resources": {
+		"BulkSQSNotificationPolicy": {
+			"Type": "AWS::SQS::QueuePolicy",
+			"Properties": {
+				"Queues": [ { "Ref": "BulkSQS" } ],
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Principal": { "Service": "s3.amazonaws.com" },
+							"Resource": { "Fn::GetAtt": [ "BulkSQS", "Arn" ] },
+							"Action": [ "SQS:SendMessage" ],
+							"Condition": {
+								"ArnLike": {
+									"aws:SourceArn": { "Fn::Join" : [ "", [
+										"arn:aws:s3:*:*:", { "Ref": "BulkProcessingBucketName"} ]
+									] }
+								},
+								"StringEquals": {
+									"aws:SourceAccount": { "Ref": "AWS::AccountId" }
+								}
+							}
+						},
+						{
+							"Effect": "Allow",
+							"Principal": { "AWS": { "Fn::GetAtt": [ "InstanceProfileRole", "Arn" ] } },
+							"Resource": { "Fn::GetAtt": [ "BulkSQS", "Arn" ] },
+							"Action": [
+								"sqs:ReceiveMessage",
+								"sqs:DeleteMessage",
+								"sqs:GetQueueAttributes"
+							]
+						}
+					]
+				}
+			}
+		},
+		"BulkProcessingBucket": {
+			"Type": "AWS::S3::Bucket",
+			"DeletionPolicy": "Delete",
+			"DependsOn": [
+				"BulkSQSNotificationPolicy"
+			],
+			"Properties": {
+				"BucketName": { "Ref": "BulkProcessingBucketName" },
+				"NotificationConfiguration": {
+					"QueueConfigurations": [
+						{
+							"Event": "s3:ObjectCreated:*",
+							"Queue": {
+								"Fn::GetAtt": [
+									"BulkSQS",
+									"Arn"
+								]
+							}
+						}
+					]
+				},
+				"AccessControl": "Private",
+				"PublicAccessBlockConfiguration": {
+					"BlockPublicAcls": "true",
+					"BlockPublicPolicy": "true",
+					"IgnorePublicAcls": "true",
+					"RestrictPublicBuckets": "true"
+				},
+				"BucketEncryption": {
+					"ServerSideEncryptionConfiguration": [ { "ServerSideEncryptionByDefault": { "SSEAlgorithm": "AES256" } } ]
+				}
+			}
+		},
+		"BulkSQSDLQ": {
+			"Type": "AWS::SQS::Queue",
+			"Properties": {
+				"VisibilityTimeout": 60,
+				"MessageRetentionPeriod": 1209600
+			}
+		},
+		"BulkSQS": {
+			"DependsOn": [
+				"BulkSQSDLQ"
+			],
+			"Type": "AWS::SQS::Queue",
+			"Properties": {
+				"RedrivePolicy": {
+					"deadLetterTargetArn": {
+						"Fn::GetAtt": [
+							"BulkSQSDLQ",
+							"Arn"
+						]
+                    },
+                    "maxReceiveCount" : 10
+                },
+                "VisibilityTimeout": 60
+            }
+        },
 		"Application": {
 			"Type": "AWS::ElasticBeanstalk::Application",
 			"Properties": {
@@ -267,6 +366,11 @@
 					},
 					{
 						"Namespace": "aws:elasticbeanstalk:application:environment",
+						"OptionName": "BULK_QUEUE_ENDPOINT",
+						"Value": { "Ref": "BulkSQS" }
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:application:environment",
 						"OptionName": "RDS_PORT",
 						"Value": "5432"
 					},
@@ -353,8 +457,30 @@
 					},
 					{
 						"Ref": "KMSPolicyArn"
+					},
+					{
+						"Ref": "BulkSQSPolicy"
 					}
 				]
+			}
+		},
+		"BulkSQSPolicy": {
+			"Type": "AWS::IAM::ManagedPolicy",
+			"Properties": {
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Action": [
+								"sqs:ReceiveMessage",
+								"sqs:DeleteMessage",
+								"sqs:GetQueueAttributes"
+							],
+							"Resource": { "Fn::GetAtt": [ "BulkSQS", "Arn" ] }
+						}
+					]
+				}
 			}
 		},
 		"SecretPolicy": {
