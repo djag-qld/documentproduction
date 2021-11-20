@@ -138,7 +138,7 @@
 				"NotificationConfiguration": {
 					"QueueConfigurations": [
 						{
-							"Event": "s3:ObjectCreated:*",
+							"Event": "s3:ObjectCreated:Put",
 							"Queue": {
 								"Fn::GetAtt": [
 									"BulkSQS",
