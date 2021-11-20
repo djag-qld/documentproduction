@@ -1,0 +1,8 @@
+{
+	"agency": "some agency",
+ 	"templateAlias": "some template alias",
+ 	"templateModel": {
+ 		"a field": "a value",
+ 		"b field": "b value"
+ 	}
+}

@@ -1,0 +1,9 @@
+{
+	"agency": "some agency",
+ 	"signatureAlias": [ "alias a", "alias b" ],
+ 	"templateAlias": "some template alias",
+ 	"templateModel": {
+ 		"a field": "a value",
+ 		"b field": "b value"
+ 	}
+}
