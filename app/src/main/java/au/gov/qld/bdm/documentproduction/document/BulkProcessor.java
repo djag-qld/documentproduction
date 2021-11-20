@@ -77,7 +77,7 @@ public class BulkProcessor {
 		String bucketName = record.getS3().getBucket().getName();
 		String key = record.getS3().getObject().getKey();
 		if (!key.endsWith("json")) {
-			LOG.info("Ignoring object in bucket: {} with key: {}", bucketName, key);
+			LOG.info("Ignoring object in bucket: {} with key: {} since it does not have a json extension", bucketName, key);
 			return;
 		}
 		
