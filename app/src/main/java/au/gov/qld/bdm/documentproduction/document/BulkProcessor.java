@@ -83,8 +83,12 @@ public class BulkProcessor {
 		
 		LOG.info("Processing record in bucket: {} with key: {}", bucketName, key);
 		AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();
-
 		try {
+			if (!s3Client.doesObjectExist(bucketName, key)) {
+				LOG.info("Object no longer exists in bucket: {} with key: {}", bucketName, key);
+				return;
+			}
+			
 			S3Object s3Object = s3Client.getObject(bucketName, key);
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			IOUtils.copy(s3Object.getObjectContent(), baos);
