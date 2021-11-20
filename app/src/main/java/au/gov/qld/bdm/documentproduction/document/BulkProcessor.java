@@ -51,7 +51,7 @@ public class BulkProcessor {
 			return;
 		}
 		
-		LOG.info("Looking for new messages");
+		LOG.debug("Looking for new messages");
 		AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
 		ReceiveMessageRequest request = new ReceiveMessageRequest(queueUrl);
 		request.setWaitTimeSeconds(10);

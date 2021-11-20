@@ -160,6 +160,30 @@
 				}
 			}
 		},
+		"BulkProcessingBucketPolicy": {
+			"Type": "AWS::S3::BucketPolicy",
+			"Properties": {
+				"Bucket": {
+					"Ref": "BulkProcessingBucket"
+				},
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Principal": { "AWS": { "Fn::GetAtt": [ "InstanceProfileRole", "Arn" ] } },
+							"Resource": { "Fn::Join" : [ "", [
+								"arn:aws:s3:::", { "Ref": "BulkProcessingBucketName"}, "/*" ]
+							] },
+							"Action": [
+								"s3:*Object",
+								"s3:List*"
+							]
+						}
+					]
+				}
+			}
+		},
 		"BulkSQSDLQ": {
 			"Type": "AWS::SQS::Queue",
 			"Properties": {
