@@ -28,6 +28,8 @@ This service is designed to be reusable through agency data segregation.
 | PDFBox and BouncyCastle for signing | Beanstalk application environment |
 | FreeMarker templating | KMS for signing |
 | | Secrets Manager for RDS access |
+| | S3 to send bulk request files and store PDF output within |
+| | SQS triggering bulk processing of request files in S3 |
 
 Administration portal UI built upon the Colorlib Gentelella theme: https://github.com/ColorlibHQ/gentelella
 

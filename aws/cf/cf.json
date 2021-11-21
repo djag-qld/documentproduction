@@ -144,6 +144,16 @@
 									"BulkSQS",
 									"Arn"
 								]
+							},
+							"Filter": {
+								"S3Key": {
+									"Rules": [
+										{
+											"Name": "suffix",
+											"Value": ".json"
+										}
+									]
+								}
 							}
 						}
 					]
