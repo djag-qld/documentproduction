@@ -28,6 +28,8 @@ This service is designed to be reusable through agency data segregation.
 | PDFBox and BouncyCastle for signing | Beanstalk application environment |
 | FreeMarker templating | KMS for signing |
 | | Secrets Manager for RDS access |
+| | S3 to send bulk request files and store PDF output within |
+| | SQS triggering bulk processing of request files in S3 |
 
 Administration portal UI built upon the Colorlib Gentelella theme: https://github.com/ColorlibHQ/gentelella
 
@@ -146,6 +148,26 @@ Signature templates are used to structure signatures applied to signed PDF docum
 4. Contact information template (optional): Used to identify what the primary contact is for confirming a signature's legitmacy.
 5. Signature key (required): Which Signing key should be used for the digital signature.
 
+### Bulk production
+The Document Production service supports bulk processing of requests. Each request is represented as a JSON object and uploaded to the S3 bucket created in CloudFormation. Each request is processed sequentially and written to the S3 bucket's output directory. 
+
+Upload these request JSON files to the S3 bucket defined in the Cloudformation template paramter: BulkProcessingBucketName. Bulk requests must extend .json and be in the format:
+```
+{
+  "agency": "agency which has the signature alias and template alias",
+  "signatureAlias": [ "test alias" ],
+  "templateAlias": "test template alias",
+  "templateModel": {
+    "fielda": "some field a's value",
+    "fieldb": "some field b's value"
+  }
+}
+```
+Note: signatureAlias is optional and can be an empty list ("signatureAlias": []) to not have these documents signed.
+
+The resulting documents will be written to the bucket in the format: output/documentid.pdf
+If there's an error processing the request, it will be moved to the failed/ directory.
+
 ## Verifying signed QR codes in documents
 Check out the web based demonstration client under client/demo in this repository.
 
@@ -179,3 +201,4 @@ The signature is created against the JSON format of all fields and metadata abou
 openssl dgst -sha256 -verify pub.pem -signature sig data
 ```
 You should get a message: Verified OK
+
