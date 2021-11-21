@@ -10,7 +10,6 @@ import org.springframework.security.cas.authentication.CasAssertionAuthenticatio
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.web.CasAuthenticationEntryPoint;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -110,11 +109,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		return logoutFilter;
 	}
 
-	@Autowired
-	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-		auth.authenticationProvider(casAuthenticationProvider());
-	}
-	
 	@Override
 	public void configure(WebSecurity web) throws Exception {
 		web.ignoring().antMatchers("/public/**/*", "/api/**/*", "/health/check");
@@ -122,6 +116,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+		http.authenticationProvider(casAuthenticationProvider());
 		http
 			.csrf().and()
 			.headers().and()
