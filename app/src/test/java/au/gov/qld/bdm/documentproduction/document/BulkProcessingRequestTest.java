@@ -20,8 +20,7 @@ public class BulkProcessingRequestTest {
 	public void shouldParseFullRequest() throws Exception {
 		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("bulkProcessingRequest.json");
 		BulkProcessingRequest request = new Gson().fromJson(IOUtils.toString(inputStream, StandardCharsets.UTF_8), BulkProcessingRequest.class);
-		assertThat(request.getCredential().getId(), is("bulkRequest"));
-		assertThat(request.getCredential().getAgency(), is("some agency"));
+		assertThat(request.getAgency(), is("some agency"));
 		assertThat(request.getSignatureAlias(), is(Arrays.asList("alias a", "alias b")));
 		assertThat(request.getTemplateAlias(), is("some template alias"));
 		assertThat(request.getTemplateModel(), hasEntry("a field", "a value"));
@@ -32,8 +31,7 @@ public class BulkProcessingRequestTest {
 	public void shouldParseRequestWithoutSignature() throws Exception {
 		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("bulkProcessingRequestWithoutSignature.json");
 		BulkProcessingRequest request = new Gson().fromJson(IOUtils.toString(inputStream, StandardCharsets.UTF_8), BulkProcessingRequest.class);
-		assertThat(request.getCredential().getId(), is("bulkRequest"));
-		assertThat(request.getCredential().getAgency(), is("some agency"));
+		assertThat(request.getAgency(), is("some agency"));
 		assertThat(request.getSignatureAlias(), nullValue());
 		assertThat(request.getTemplateAlias(), is("some template alias"));
 		assertThat(request.getTemplateModel(), hasEntry("a field", "a value"));
