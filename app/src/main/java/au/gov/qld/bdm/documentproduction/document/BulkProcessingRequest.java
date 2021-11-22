@@ -3,8 +3,6 @@ package au.gov.qld.bdm.documentproduction.document;
 import java.util.List;
 import java.util.Map;
 
-import au.gov.qld.bdm.documentproduction.audit.AuditableCredential;
-
 public class BulkProcessingRequest {
 	
 	private String agency;
@@ -20,22 +18,12 @@ public class BulkProcessingRequest {
 		return templateAlias;
 	}
 
-	public AuditableCredential getCredential() {
-		return new AuditableCredential() {
-			@Override
-			public String getId() {
-				return "bulkRequest";
-			}
-			
-			@Override
-			public String getAgency() {
-				return agency;
-			}
-		};
-	}
-
 	public Map<String, String> getTemplateModel() {
 		return templateModel;
+	}
+
+	public String getAgency() {
+		return agency;
 	}
 
 }

@@ -26,6 +26,8 @@ import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.google.gson.Gson;
 
+import au.gov.qld.bdm.documentproduction.audit.AuditableCredential;
+
 @Service
 public class BulkProcessor {
 	
@@ -96,9 +98,10 @@ public class BulkProcessor {
 			BulkProcessingRequest request = new Gson().fromJson(baos.toString(), BulkProcessingRequest.class);
 			LOG.info("Parsed bulk processing request from bucket: {} with key: {} to: {}", bucketName, key);
 			
-			final String documentId = documentService.record(request.getCredential(), request.getTemplateAlias(), request.getSignatureAlias());
+			AuditableCredential credential = createCredentialFromRequest(record.getUserIdentity().getPrincipalId(), request.getAgency());
+			final String documentId = documentService.record(credential, request.getTemplateAlias(), request.getSignatureAlias());
 			ByteArrayOutputStream pdfOs = new ByteArrayOutputStream();
-			documentService.produce(request.getCredential(), documentId, request.getTemplateModel(), DocumentOutputFormat.PDF, pdfOs);
+			documentService.produce(credential, documentId, request.getTemplateModel(), DocumentOutputFormat.PDF, pdfOs);
 			
 			final byte[] pdfData;
 			if (request.getSignatureAlias() == null || request.getSignatureAlias().isEmpty()) {
@@ -106,7 +109,7 @@ public class BulkProcessor {
 			} else {
 				ByteArrayOutputStream signedOs = new ByteArrayOutputStream();
 				ByteArrayInputStream pdf = new ByteArrayInputStream(pdfOs.toByteArray());
-				documentService.sign(request.getCredential(), documentId, request.getTemplateModel(), pdf, signedOs);
+				documentService.sign(credential, documentId, request.getTemplateModel(), pdf, signedOs);
 				pdfData = signedOs.toByteArray();
 			}
 			
@@ -123,6 +126,20 @@ public class BulkProcessor {
 			LOG.error(e.getMessage(), e);
 			moveToFailed(bucketName, key, s3Client);
 		}
+	}
+
+	private AuditableCredential createCredentialFromRequest(String principalId, String agency) {
+		return new AuditableCredential() {
+			@Override
+			public String getId() {
+				return principalId;
+			}
+			
+			@Override
+			public String getAgency() {
+				return agency;
+			}
+		};
 	}
 
 	private void moveToFailed(String bucketName, String key, AmazonS3 s3Client) {
