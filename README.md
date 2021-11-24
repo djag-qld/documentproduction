@@ -10,14 +10,14 @@ The digital signatures prevent the PDF from being modified without subsequently 
 This service is designed to be reusable through agency data segregation.
 
 ## Key features
-1. Web administration portal integrated with CAS https://github.com/apereo/cas for authentication
-2. API key management
-3. Template management and processing with FreeMarker https://github.com/apache/freemarker
-4. Signature and key management, including provisioning of CSRs for AATL members to sign
-5. PDF production including barcodes and signing
-6. Signed QR codes for offline verification of printed documents
-7. Add LTV to the document and signatures by providing a timestamp service link (RFC3161)
-8. Auditing of changes, signatures applied and documents produced
+* PDF production including barcodes and signing
+* Signed QR codes for offline verification of printed documents
+* Add LTV to the document and signatures by providing a timestamp service link (RFC3161)
+* Signature and key management, including provisioning of CSRs for AATL members to sign
+* API for document and signature production
+* Web administration portal integrated with CAS https://github.com/apereo/cas for authentication
+* Template management and processing with FreeMarker https://github.com/apache/freemarker
+* Auditing of administration access, changes, signatures applied and documents produced
 
 ## Architecture
 ![Architecture](https://github.com/qld-gov-au/documentproduction/raw/main/arch.png)
