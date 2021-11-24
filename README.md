@@ -1,5 +1,5 @@
 # Document Production
-[![app-build-main Actions Status](https://github.com/qld-gov-au/documentproduction/workflows/Java CI/badge.svg)](https://github.com/qld-gov-au/documentproduction/actions) [![demo-build-main Actions Status](https://github.com/qld-gov-au/documentproduction/workflows/VueJs CI/badge.svg)](https://github.com/qld-gov-au/documentproduction/actions)
+[![app-build](https://github.com/qld-gov-au/documentproduction/actions/workflows/java.yml/badge.svg)](https://github.com/qld-gov-au/documentproduction/actions/workflows/java.yml)
 
 This service is used to sign PDFs with digital signatures.
 The service also produces documents from templates which can include signed QR codes that are used to validate the integrity of digital and printed documents.
