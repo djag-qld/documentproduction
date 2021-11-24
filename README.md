@@ -11,7 +11,7 @@ This service is designed to be reusable through agency data segregation.
 
 ## Key features
 * PDF production including barcodes and signing
-* Signed QR codes for offline verification of printed documents
+* Signed QR codes for verification on screen or on printed documents
 * Add LTV to the document and signatures by providing a timestamp service link (RFC3161)
 * Signature and key management, including provisioning of CSRs for AATL members to sign
 * API for document and signature production
