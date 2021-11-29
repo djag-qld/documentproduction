@@ -87,6 +87,10 @@
 		"BulkProcessingBucketName": {
 			"Type": "String",
 			"Description": "Name of the bucket used to process bulk document production and send output to"
+		},
+		"BulkProcessingS3UserParam": {
+			"Type": "String",
+			"Description": "Friendly name of user with an API key to access the bulk processing bucket. The user will have a policy applied that grants access to this bucket"
 		}
 	},
 	"Resources": {
@@ -189,6 +193,55 @@
 								"s3:*Object",
 								"s3:List*"
 							]
+						},
+						{
+							"Effect": "Allow",
+							"Principal": { "AWS": { "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:user/${BulkProcessingS3UserParam}" } },
+							"Resource": { "Fn::Join" : [ "", [
+								"arn:aws:s3:::", { "Ref": "BulkProcessingBucketName"} ]
+							] },
+							"Action": [
+								"s3:ListBucket"
+							]
+						},
+						{
+							"Effect": "Allow",
+							"Principal": { "AWS": { "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:user/${BulkProcessingS3UserParam}" } },
+							"Resource": { "Fn::Join" : [ "", [
+								"arn:aws:s3:::", { "Ref": "BulkProcessingBucketName"}, "/*" ]
+							] },
+							"Action": [
+								"s3:*Object"
+							]
+						}
+					]
+				}
+			}
+		},
+		"BulkProcessingUserPolicy": {
+			"Type": "AWS::IAM::ManagedPolicy",
+			"Properties": {
+				"Users": [ { "Ref": "BulkProcessingS3UserParam" } ],
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Resource": { "Fn::Join" : [ "", [
+								"arn:aws:s3:::", { "Ref": "BulkProcessingBucketName"}, "/*" ]
+							] },
+							"Action": [
+								"s3:*Object"
+							]
+						},
+						{
+							"Effect": "Allow",
+							"Resource": { "Fn::Join" : [ "", [
+								"arn:aws:s3:::", { "Ref": "BulkProcessingBucketName"} ]
+							] },
+							"Action": [
+								"s3:ListBucket"
+							]
 						}
 					]
 				}
@@ -213,12 +266,12 @@
 							"BulkSQSDLQ",
 							"Arn"
 						]
-                    },
-                    "maxReceiveCount" : 10
-                },
-                "VisibilityTimeout": 60
-            }
-        },
+                    		},
+                    		"maxReceiveCount" : 10
+                	},
+                	"VisibilityTimeout": 60
+            	}
+        	},
 		"Application": {
 			"Type": "AWS::ElasticBeanstalk::Application",
 			"Properties": {
