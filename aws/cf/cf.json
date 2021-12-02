@@ -390,6 +390,11 @@
 						"Value": { "Ref": "WebPortalCertificateArnParam" }
 					},
 					{
+						"Namespace": "aws:elbv2:listener:443",
+						"OptionName": "SSLPolicy",
+						"Value": "ELBSecurityPolicy-FS-1-2-Res-2020-10"
+					},
+					{
 						"Namespace": "aws:autoscaling:launchconfiguration",
 						"OptionName": "IamInstanceProfile",
 						"Value": {
@@ -400,11 +405,6 @@
 						"Namespace": "aws:autoscaling:launchconfiguration",
 						"OptionName": "SecurityGroups",
 						"Value": { "Ref": "sgbeanstalk" }
-					},
-					{
-						"Namespace": "aws:autoscaling:launchconfiguration",
-						"OptionName": "InstanceType",
-						"Value": "t2.micro"
 					},
 					{
 						"Namespace": "aws:autoscaling:updatepolicy:rollingupdate",
