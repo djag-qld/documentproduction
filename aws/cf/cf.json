@@ -41,6 +41,11 @@
 			"Type": "String",
 			"Description": "Hosted Zone ID for Beanstalk in your region: https://docs.aws.amazon.com/general/latest/gr/elasticbeanstalk.html"
 		},
+		"InstanceType": {
+			"Default": "t4g.micro",
+			"Description": "Instance type for application",
+			"Type": "String"
+		},
 		"KMSPolicyArn": {
 			"Type": "String",
 			"Description": "Application service role allowing access to KMS keys",
@@ -327,7 +332,7 @@
 					{
 						"Namespace": "aws:ec2:instances",
 						"OptionName": "InstanceTypes",
-						"Value" : "t3.micro"
+						"Value" : { "Ref": "InstanceType" }
 					},
 					{
 						"Namespace": "aws:elasticbeanstalk:command",
