@@ -463,6 +463,11 @@
 					},
 					{
 						"Namespace": "aws:elasticbeanstalk:application:environment",
+						"OptionName": "_JAVA_OPTIONS",
+						"Value": "-Dlog4j2.formatMsgNoLookups=true"
+					},
+					{
+						"Namespace": "aws:elasticbeanstalk:application:environment",
 						"OptionName": "RDS_PORT",
 						"Value": "5432"
 					},
