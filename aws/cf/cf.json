@@ -46,6 +46,11 @@
 			"Description": "Instance type for application",
 			"Type": "String"
 		},
+		"DbInstanceType": {
+			"Default": "db.t4g.micro",
+			"Description": "Instance type for database",
+			"Type": "String"
+		},
 		"KMSPolicyArn": {
 			"Type": "String",
 			"Description": "Application service role allowing access to KMS keys",
@@ -604,7 +609,7 @@
 				"DBName": {
 					"Ref": "DBName"
 				},
-				"DBInstanceClass": "db.t3.micro",
+				"DBInstanceClass": { "Ref": "DbInstanceType" },
 				"AllocatedStorage": "10",
 				"Engine": "postgres",
 				"EngineVersion": "12.7",
