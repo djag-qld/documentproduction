@@ -39,7 +39,7 @@ public class Signature implements SignatureInterface {
     @Override
     public byte[] sign(InputStream content) throws IOException {
         try {
-        	LOG.info("Applying signature from key provider");
+            LOG.info("Applying signature key: {} from key provider: {}", key.getId(), key.getKmsId());
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
             ContentSigner signer = contentSignerFactory.create(key, certificate);
             gen.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().build()).build(signer, certificate.getSignerCertificate()));
@@ -54,7 +54,7 @@ public class Signature implements SignatureInterface {
                 signedData = timeStampManager.addSignedTimeStamp(signedData);
             }
 
-            LOG.info("Done applying signature from key provider");
+            LOG.info("Done applying signature: {} from key provider: {}", key.getId(), key.getKmsId());
             byte[] encoded = signedData.getEncoded();
             signatureRecordService.storeSignature(encoded, signedData.getDigestAlgorithmIDs().stream().map(aid -> aid.getAlgorithm().getId()).collect(Collectors.joining(",")), 
             		key.getKmsId(), key.getAgency());
