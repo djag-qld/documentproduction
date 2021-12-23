@@ -38,35 +38,35 @@ public class SignatureKey extends Audited implements SignatureKeyView, Updatable
 	}
 
 	public void setAlias(String alias) {
-		this.alias = alias;
+		this.alias = alias.trim();
 	}
 
 	public void setKmsId(String kmsId) {
-		this.kmsId = kmsId;
+		this.kmsId = kmsId.trim();
 	}
 
 	public String getAlias() {
-		return alias;
+		return alias.trim();
 	}
 
 	public String getKmsId() {
-		return kmsId;
+		return kmsId.trim();
 	}
 
 	public void setAgency(String agency) {
-		this.agency = agency;
+		this.agency = agency.trim();
 	}
 	
 	public String getAgency() {
-		return agency;
+		return agency.trim();
 	}
 
 	public String getCertificate() {
-		return certificate;
+		return certificate.trim();
 	}
 
 	public void setCertificate(String certificate) {
-		this.certificate = certificate;
+		this.certificate = certificate.trim();
 	}
 
 	@Override
