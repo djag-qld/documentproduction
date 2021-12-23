@@ -90,10 +90,10 @@ public class SignatureKey extends Audited implements SignatureKeyView, Updatable
 	}
 
 	public String getTimestampEndpoint() {
-		return timestampEndpoint.trim();
+		return timestampEndpoint;
 	}
 
 	public void setTimestampEndpoint(String timestampEndpoint) {
-		this.timestampEndpoint = timestampEndpoint.trim();
+		this.timestampEndpoint = timestampEndpoint;
 	}
 }
