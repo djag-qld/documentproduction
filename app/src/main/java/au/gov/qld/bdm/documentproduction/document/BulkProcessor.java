@@ -28,6 +28,7 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import au.gov.qld.bdm.documentproduction.audit.AuditableCredential;
 import freemarker.template.TemplateException;
@@ -106,7 +107,13 @@ public class BulkProcessor {
 			}
 			
 			String data = getS3ObjectContentAsString(s3Client, bucketName, key);
-			BulkProcessingRequest request = new Gson().fromJson(data, BulkProcessingRequest.class);
+			BulkProcessingRequest request;
+			try {
+				request = new Gson().fromJson(data, BulkProcessingRequest.class);
+			} catch (JsonSyntaxException e) {
+				LOG.info("Could not read: \"{}\"", data);
+				throw e;
+			}
 			LOG.info("Parsed bulk processing request from bucket: {} with key: {} to: {}", bucketName, key);
 			
 			AuditableCredential credential = createCredentialFromRequest(record.getUserIdentity().getPrincipalId(), request.getAgency());
