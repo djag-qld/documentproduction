@@ -18,19 +18,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.event.S3EventNotification;
 import com.amazonaws.services.s3.event.S3EventNotification.S3EventNotificationRecord;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 
 import au.gov.qld.bdm.documentproduction.audit.AuditableCredential;
+import au.gov.qld.bdm.documentproduction.util.AwsHelper;
 import freemarker.template.TemplateException;
 
 @Service
@@ -40,11 +38,13 @@ public class BulkProcessor {
 	
 	private final String queueUrl;
 	private final DocumentService documentService;
+	private final AwsHelper awsHelper;
 	
 	@Autowired
-	public BulkProcessor(@Value("${aws.sqs.queueUrl}") String queueUrl, DocumentService documentService) {
+	public BulkProcessor(@Value("${aws.sqs.queueUrl}") String queueUrl, DocumentService documentService, AwsHelper awsHelper) {
 		this.queueUrl = queueUrl;
 		this.documentService = documentService;
+		this.awsHelper = awsHelper;
 		if (StringUtils.isBlank(queueUrl)) {
 			LOG.info("No queue URL. Bulk processor disabled");
 		} else {
@@ -59,7 +59,7 @@ public class BulkProcessor {
 		}
 		
 		LOG.debug("Looking for new messages");
-		AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
+		AmazonSQS sqs = awsHelper.getSqsClient();
 		ReceiveMessageRequest request = new ReceiveMessageRequest(queueUrl);
 		request.setWaitTimeSeconds(10);
 		request.setMaxNumberOfMessages(10);
@@ -80,7 +80,7 @@ public class BulkProcessor {
 		
 	}
 	
-	public String getS3ObjectContentAsString(AmazonS3 s3Client, String bucketName, String key) {
+	private String getS3ObjectContentAsString(AmazonS3 s3Client, String bucketName, String key) {
 		try {
 			try (InputStream is = s3Client.getObject(bucketName, key).getObjectContent()) {
 				return StreamUtils.copyToString(is, StandardCharsets.UTF_8);
@@ -99,7 +99,7 @@ public class BulkProcessor {
 		}
 		
 		LOG.info("Processing record in bucket: {} with key: {}", bucketName, key);
-		AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();
+		AmazonS3 s3Client = awsHelper.getS3Client();
 		try {
 			if (!s3Client.doesObjectExist(bucketName, key)) {
 				LOG.info("Object no longer exists in bucket: {} with key: {}", bucketName, key);
@@ -107,13 +107,7 @@ public class BulkProcessor {
 			}
 			
 			String data = getS3ObjectContentAsString(s3Client, bucketName, key);
-			BulkProcessingRequest request;
-			try {
-				request = new Gson().fromJson(data, BulkProcessingRequest.class);
-			} catch (JsonSyntaxException e) {
-				LOG.info("Could not read: \"{}\"", data);
-				throw e;
-			}
+			BulkProcessingRequest request = new Gson().fromJson(data, BulkProcessingRequest.class);
 			LOG.info("Parsed bulk processing request from bucket: {} with key: {} to: {}", bucketName, key);
 			
 			AuditableCredential credential = createCredentialFromRequest(record.getUserIdentity().getPrincipalId(), request.getAgency());

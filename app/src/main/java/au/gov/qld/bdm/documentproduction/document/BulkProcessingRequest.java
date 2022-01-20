@@ -26,4 +26,20 @@ public class BulkProcessingRequest {
 		return agency;
 	}
 
+	public void setTemplateAlias(String templateAlias) {
+		this.templateAlias = templateAlias;
+	}
+
+	public void setSignatureAlias(List<String> signatureAlias) {
+		this.signatureAlias = signatureAlias;
+	}
+
+	public void setTemplateModel(Map<String, String> templateModel) {
+		this.templateModel = templateModel;
+	}
+
+	public void setAgency(String agency) {
+		this.agency = agency;
+	}
+
 }
