@@ -1,7 +1,6 @@
 package au.gov.qld.bdm.documentproduction.web;
 
 import static org.apache.commons.lang3.StringUtils.defaultString;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -10,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -30,22 +28,22 @@ import au.gov.qld.bdm.documentproduction.signaturekey.SignatureKeyService;
 import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKey;
 
 @Controller
-public class SignatureKeyController {
+public class SignatureKeyController extends AdminListController {
 	private final SignatureKeyService service;
 	private final SigningService signingService;
 	private final String subjectdn;
 
 	@Autowired
-	public SignatureKeyController(SignatureKeyService service, SigningService signingService, @Value("${sign.subjectdn}") String subjectdn) {
+	public SignatureKeyController(SignatureKeyService service, SigningService signingService, @Value("${sign.subjectdn}") String subjectdn, @Value("${security.require-ssl}") boolean secure) {
+		super(secure);
 		this.service = service;
 		this.signingService = signingService;
 		this.subjectdn = subjectdn;
 	}
 	
 	@GetMapping("/user/signaturekey/toggleLatest")
-	public RedirectView toggleLatest(Principal principal, @CookieValue(defaultValue = "false", required = false) boolean hideInactive, HttpServletResponse response) {
-		response.addCookie(new Cookie("hideInactive", String.valueOf(!hideInactive)));
-		return redirectToList();
+	public RedirectView toggleLatest(@CookieValue(defaultValue = "false", required = false) boolean hideInactive, HttpServletResponse response) {
+		return toggleAndRedirect(hideInactive, response);
 	}
 	
 	@GetMapping("/user/signaturekey")
@@ -59,15 +57,15 @@ public class SignatureKeyController {
 	
 	@GetMapping("/user/signaturekey/{alias}/certificate/{version}")
 	public void certificate(Principal principal, @PathVariable String alias, @PathVariable int version, HttpServletResponse response) throws IOException {		
-        String certificate = service.getCertificate(new WebAuditableCredential(principal).getAgency(), alias, version);
-        if (isBlank(certificate)) {
+        Optional<SignatureKey> signatureKey = service.findKeyForAlias(new WebAuditableCredential(principal).getAgency(), alias, version);
+        if (!signatureKey.isPresent()) {
         	throw new IllegalArgumentException("Could not find by alias, version and agency");
         }
         
         response.setContentType("text/plain");
         response.setHeader("Cache-Control", "must-revalidate");
-        response.setHeader("Content-Disposition", "attachment; filename=" + alias + ".cer");		
-		IOUtils.write(certificate, response.getOutputStream(), StandardCharsets.UTF_8);
+        response.setHeader("Content-Disposition", "attachment; filename=" + signatureKey.get().getAlias() + ".cer");		
+		IOUtils.write(signatureKey.get().getCertificate(), response.getOutputStream(), StandardCharsets.UTF_8);
 	}
 	
 	@PostMapping("/user/signaturekey/add")
@@ -86,14 +84,13 @@ public class SignatureKeyController {
 		
 		response.setContentType("text/plain");
         response.setHeader("Cache-Control", "must-revalidate");
-        response.setHeader("Content-Disposition", "attachment; filename=" + alias + ".csr");
+        response.setHeader("Content-Disposition", "attachment; filename=" + signatureKey.get().getAlias() + ".csr");
 		IOUtils.write(signingService.generateCsr(signatureKey.get(), credential, subjectdn), response.getOutputStream(), StandardCharsets.UTF_8);
 	}
-	
-	private RedirectView redirectToList() {
-		RedirectView redirectView = new RedirectView("/user/signaturekey");
-		redirectView.setExposeModelAttributes(false);
-		redirectView.setExposePathVariables(false);
-		return redirectView;
+
+	@Override
+	protected String getBase() {
+		return "/user/signaturekey";
 	}
+	
 }

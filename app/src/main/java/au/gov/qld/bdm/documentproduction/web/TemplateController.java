@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,13 +29,14 @@ import au.gov.qld.bdm.documentproduction.template.entity.TemplateView;
 import freemarker.template.TemplateException;
 
 @Controller
-public class TemplateController {
+public class TemplateController extends AdminListController {
 	
 	private final TemplateService service;
 	private final DocumentService documentService;
 
 	@Autowired
-	public TemplateController(TemplateService service, DocumentService documentService) {
+	public TemplateController(TemplateService service, DocumentService documentService, @Value("${security.require-ssl}") boolean secure) {
+		super(secure);
 		this.service = service;
 		this.documentService = documentService;
 	}
@@ -49,9 +50,8 @@ public class TemplateController {
 	}
 	
 	@GetMapping("/user/template/toggleLatest")
-	public RedirectView toggleLatest(Principal principal, @CookieValue(defaultValue = "false", required = false) boolean hideInactive, HttpServletResponse response) {
-		response.addCookie(new Cookie("hideInactive", String.valueOf(!hideInactive)));
-		return redirectToList();
+	public RedirectView toggleLatest(@CookieValue(defaultValue = "false", required = false) boolean hideInactive, HttpServletResponse response) {
+		return toggleAndRedirect(hideInactive, response);
 	}
 	
 	@PostMapping("/user/template/add")
@@ -69,7 +69,7 @@ public class TemplateController {
 
         response.setContentType("text/plain");
         response.setHeader("Cache-Control", "must-revalidate");
-        response.setHeader("Content-Disposition", "attachment; filename=" + alias + "-" + version + ".txt");
+        response.setHeader("Content-Disposition", "attachment; filename=" + view.get().getAlias() + "-" + view.get().getVersion() + ".txt");
         IOUtils.write(view.get().getContent(), response.getOutputStream(), StandardCharsets.UTF_8);
 	}
 	
@@ -78,7 +78,7 @@ public class TemplateController {
 		response.setHeader("Cache-Control", "must-revalidate");
 		try {
 			response.setContentType("application/pdf");
-			response.setHeader("Content-disposition", "attachment; filename=preview- " + template + "-" + version + ".pdf");
+			response.setHeader("Content-disposition", "attachment; filename=preview.pdf");
 			documentService.preview(new WebAuditableCredential(principal), template, version, response.getOutputStream());
 		} catch (Exception e) {
 			response.setHeader("Content-disposition", "attachment; filename=error.txt");
@@ -87,11 +87,9 @@ public class TemplateController {
 		}
 	}
 
-	private RedirectView redirectToList() {
-		RedirectView redirectView = new RedirectView("/user/template");
-		redirectView.setExposeModelAttributes(false);
-		redirectView.setExposePathVariables(false);
-		return redirectView;
+	@Override
+	protected String getBase() {
+		return "/user/template";
 	}
 	
 }

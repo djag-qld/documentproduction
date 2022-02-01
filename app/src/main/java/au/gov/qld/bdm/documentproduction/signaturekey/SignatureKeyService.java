@@ -45,10 +45,6 @@ public class SignatureKeyService {
 		return repository.findAllByAgencyOrderByCreatedDesc(agency);
 	}
 
-	public String getCertificate(String agency, String alias, int version) {
-		return findKeyForAlias(agency, alias, version).get().getCertificate();
-	}
-
 	public void save(AuditableCredential credential, String alias, String kmsId, String certificate, String timestampEndpoint) {
 		Optional<SignatureKey> existing = repository.findTopByAgencyAndAliasOrderByVersionDesc(credential.getAgency(), alias);
 		if (!existing.isPresent()) {
