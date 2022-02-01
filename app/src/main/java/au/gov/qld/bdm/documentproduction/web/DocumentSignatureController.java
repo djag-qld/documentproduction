@@ -4,10 +4,10 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,13 +20,14 @@ import au.gov.qld.bdm.documentproduction.document.DocumentSignatureService;
 import au.gov.qld.bdm.documentproduction.signaturekey.SignatureKeyService;
 
 @Controller
-public class DocumentSignatureController {
+public class DocumentSignatureController extends AdminListController {
 	
 	private final DocumentSignatureService service;
 	private final SignatureKeyService signatureKeyService;
 
 	@Autowired
-	public DocumentSignatureController(DocumentSignatureService service, SignatureKeyService signatureKeyService) {
+	public DocumentSignatureController(DocumentSignatureService service, SignatureKeyService signatureKeyService, @Value("${security.require-ssl}") boolean secure) {
+		super(secure);
 		this.service = service;
 		this.signatureKeyService = signatureKeyService;
 	}
@@ -42,9 +43,8 @@ public class DocumentSignatureController {
 	}
 	
 	@GetMapping("/user/documentsignature/toggleLatest")
-	public RedirectView toggleLatest(Principal principal, @CookieValue(defaultValue = "false", required = false) boolean hideInactive, HttpServletResponse response) {
-		response.addCookie(new Cookie("hideInactive", String.valueOf(!hideInactive)));
-		return redirectToList();
+	public RedirectView toggleLatest(@CookieValue(defaultValue = "false", required = false) boolean hideInactive, HttpServletResponse response) {
+		return toggleAndRedirect(hideInactive, response);
 	}
 	
 	@PostMapping("/user/documentsignature/add")
@@ -54,11 +54,9 @@ public class DocumentSignatureController {
 		return redirectToList();
 	}
 
-	private RedirectView redirectToList() {
-		RedirectView redirectView = new RedirectView("/user/documentsignature");
-		redirectView.setExposeModelAttributes(false);
-		redirectView.setExposePathVariables(false);
-		return redirectView;
+	@Override
+	protected String getBase() {
+		return "/user/documentsignature";
 	}
 	
 }

@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -29,22 +28,22 @@ import au.gov.qld.bdm.documentproduction.signaturekey.SignatureKeyService;
 import au.gov.qld.bdm.documentproduction.signaturekey.entity.SignatureKey;
 
 @Controller
-public class SignatureKeyController {
+public class SignatureKeyController extends AdminListController {
 	private final SignatureKeyService service;
 	private final SigningService signingService;
 	private final String subjectdn;
 
 	@Autowired
-	public SignatureKeyController(SignatureKeyService service, SigningService signingService, @Value("${sign.subjectdn}") String subjectdn) {
+	public SignatureKeyController(SignatureKeyService service, SigningService signingService, @Value("${sign.subjectdn}") String subjectdn, @Value("${security.require-ssl}") boolean secure) {
+		super(secure);
 		this.service = service;
 		this.signingService = signingService;
 		this.subjectdn = subjectdn;
 	}
 	
 	@GetMapping("/user/signaturekey/toggleLatest")
-	public RedirectView toggleLatest(Principal principal, @CookieValue(defaultValue = "false", required = false) boolean hideInactive, HttpServletResponse response) {
-		response.addCookie(new Cookie("hideInactive", String.valueOf(!hideInactive)));
-		return redirectToList();
+	public RedirectView toggleLatest(@CookieValue(defaultValue = "false", required = false) boolean hideInactive, HttpServletResponse response) {
+		return toggleAndRedirect(hideInactive, response);
 	}
 	
 	@GetMapping("/user/signaturekey")
@@ -59,7 +58,7 @@ public class SignatureKeyController {
 	@GetMapping("/user/signaturekey/{alias}/certificate/{version}")
 	public void certificate(Principal principal, @PathVariable String alias, @PathVariable int version, HttpServletResponse response) throws IOException {		
         Optional<SignatureKey> signatureKey = service.findKeyForAlias(new WebAuditableCredential(principal).getAgency(), alias, version);
-        if (signatureKey.isEmpty()) {
+        if (!signatureKey.isPresent()) {
         	throw new IllegalArgumentException("Could not find by alias, version and agency");
         }
         
@@ -79,7 +78,7 @@ public class SignatureKeyController {
 	public void csr(Principal principal, @RequestParam String alias, @RequestParam String subjectdn, HttpServletResponse response) throws IOException {
 		WebAuditableCredential credential = new WebAuditableCredential(principal);
         Optional<SignatureKey> signatureKey = service.findKeyForAlias(credential.getAgency(), alias.split(" v:")[0], Integer.valueOf(alias.split(" v:")[1]));
-		if (signatureKey.isEmpty()) {
+		if (!signatureKey.isPresent()) {
 			throw new IllegalArgumentException("Could not find by alias, version and agency");
         }
 		
@@ -88,11 +87,10 @@ public class SignatureKeyController {
         response.setHeader("Content-Disposition", "attachment; filename=" + signatureKey.get().getAlias() + ".csr");
 		IOUtils.write(signingService.generateCsr(signatureKey.get(), credential, subjectdn), response.getOutputStream(), StandardCharsets.UTF_8);
 	}
-	
-	private RedirectView redirectToList() {
-		RedirectView redirectView = new RedirectView("/user/signaturekey");
-		redirectView.setExposeModelAttributes(false);
-		redirectView.setExposePathVariables(false);
-		return redirectView;
+
+	@Override
+	protected String getBase() {
+		return "/user/signaturekey";
 	}
+	
 }

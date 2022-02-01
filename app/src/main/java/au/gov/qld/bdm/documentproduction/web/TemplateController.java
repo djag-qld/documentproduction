@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,13 +29,14 @@ import au.gov.qld.bdm.documentproduction.template.entity.TemplateView;
 import freemarker.template.TemplateException;
 
 @Controller
-public class TemplateController {
+public class TemplateController extends AdminListController {
 	
 	private final TemplateService service;
 	private final DocumentService documentService;
 
 	@Autowired
-	public TemplateController(TemplateService service, DocumentService documentService) {
+	public TemplateController(TemplateService service, DocumentService documentService, @Value("${security.require-ssl}") boolean secure) {
+		super(secure);
 		this.service = service;
 		this.documentService = documentService;
 	}
@@ -49,9 +50,8 @@ public class TemplateController {
 	}
 	
 	@GetMapping("/user/template/toggleLatest")
-	public RedirectView toggleLatest(Principal principal, @CookieValue(defaultValue = "false", required = false) boolean hideInactive, HttpServletResponse response) {
-		response.addCookie(new Cookie("hideInactive", String.valueOf(!hideInactive)));
-		return redirectToList();
+	public RedirectView toggleLatest(@CookieValue(defaultValue = "false", required = false) boolean hideInactive, HttpServletResponse response) {
+		return toggleAndRedirect(hideInactive, response);
 	}
 	
 	@PostMapping("/user/template/add")
@@ -63,7 +63,7 @@ public class TemplateController {
 	@GetMapping("/user/template/view/{alias}/{version}")
 	public void view(Principal principal, @PathVariable String alias, @PathVariable int version, HttpServletResponse response) throws IOException {
         Optional<TemplateView> view = service.findByAliasAndVersionAndAgency(alias, version, new WebAuditableCredential(principal).getAgency());
-        if (view.isEmpty()) {
+        if (!view.isPresent()) {
         	throw new IllegalArgumentException("Could not find by alias, version and agency");
         }
 
@@ -87,11 +87,9 @@ public class TemplateController {
 		}
 	}
 
-	private RedirectView redirectToList() {
-		RedirectView redirectView = new RedirectView("/user/template");
-		redirectView.setExposeModelAttributes(false);
-		redirectView.setExposePathVariables(false);
-		return redirectView;
+	@Override
+	protected String getBase() {
+		return "/user/template";
 	}
 	
 }
