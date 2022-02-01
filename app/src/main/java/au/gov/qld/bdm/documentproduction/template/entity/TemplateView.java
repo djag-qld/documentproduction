@@ -7,4 +7,5 @@ public interface TemplateView {
 	String getCreatedBy();
 	Date getCreated();
 	String getContent();
+	int getVersion();
 }

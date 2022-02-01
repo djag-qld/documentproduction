@@ -63,13 +63,13 @@ public class TemplateController {
 	@GetMapping("/user/template/view/{alias}/{version}")
 	public void view(Principal principal, @PathVariable String alias, @PathVariable int version, HttpServletResponse response) throws IOException {
         Optional<TemplateView> view = service.findByAliasAndVersionAndAgency(alias, version, new WebAuditableCredential(principal).getAgency());
-        if (!view.isPresent()) {
+        if (view.isEmpty()) {
         	throw new IllegalArgumentException("Could not find by alias, version and agency");
         }
 
         response.setContentType("text/plain");
         response.setHeader("Cache-Control", "must-revalidate");
-        response.setHeader("Content-Disposition", "attachment; filename=" + alias + "-" + version + ".txt");
+        response.setHeader("Content-Disposition", "attachment; filename=" + view.get().getAlias() + "-" + view.get().getVersion() + ".txt");
         IOUtils.write(view.get().getContent(), response.getOutputStream(), StandardCharsets.UTF_8);
 	}
 	
@@ -78,7 +78,7 @@ public class TemplateController {
 		response.setHeader("Cache-Control", "must-revalidate");
 		try {
 			response.setContentType("application/pdf");
-			response.setHeader("Content-disposition", "attachment; filename=preview- " + template + "-" + version + ".pdf");
+			response.setHeader("Content-disposition", "attachment; filename=preview.pdf");
 			documentService.preview(new WebAuditableCredential(principal), template, version, response.getOutputStream());
 		} catch (Exception e) {
 			response.setHeader("Content-disposition", "attachment; filename=error.txt");

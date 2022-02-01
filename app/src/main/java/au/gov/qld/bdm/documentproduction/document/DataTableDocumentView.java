@@ -127,6 +127,11 @@ public class DataTableDocumentView implements DocumentView {
 			public String getContent() {
 				return null;
 			}
+
+			@Override
+			public int getVersion() {
+				return 0;
+			}
 		};
 	}
 
