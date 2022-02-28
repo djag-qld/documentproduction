@@ -111,13 +111,22 @@ Document templates are created with:
 1. Alias (required): The alias used to refer to the most recent (and active) document template in API calls.
 2. Content (required): A FreeMarker template that is provided the templateModel. Must be strict HTML and supports CSS 2.0 inline stylesheets.
 
+#### Variables available in templates ####
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| created | Java Date object | Date/time when document created in the environment's timezone |
+| lastmodified | Java Date object | Same as created |
+| documentCounter | long | Incrementing counter for all documents. Useful for barcodes identifying this particular document |
+| templateModel | Java Map<String, String> | Name value pairs of supplied template model in the API call |
+| simpleData | Java Map<String, String> | Same as templateModel. Maintained for compatibility with older PDF creation products |
+
 Barcodes can also be created inside the PDFs by using special image tags.
 ```
 <img src="..." type="..." qrpixels="..." imagetype="..." width="..." height="..." />
 ```
 Use the "type" attribute with value: "qrcode" for a QR code:
 | type | Description | Attribute | Values | Required |
-| :---: | :---: | :---: | :---: | :---: |
+| :--- | :--- | :--- | :--- | :--- |
 | barcode | Line barcode 128 | src | Data to encode as barcode. E.g. using template data: "${templateModel['afield']}" | Yes |
 | | | width | Scaled width in pixels | Yes |
 | | | height | Scaled width in pixels | Yes |
