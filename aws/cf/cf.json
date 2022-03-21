@@ -149,6 +149,15 @@
 			],
 			"Properties": {
 				"BucketName": { "Ref": "BulkProcessingBucketName" },
+				"LifecycleConfiguration": {
+                    "Rules": [
+                        {
+                            "Id": "Cleanup",
+                            "Status": "Enabled",
+                            "ExpirationInDays": 30
+                        }
+                    ]
+                },
 				"NotificationConfiguration": {
 					"QueueConfigurations": [
 						{
