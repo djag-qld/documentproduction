@@ -6,8 +6,8 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.6.7</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<version>2.7.0</version>
+		<relativePath/>
 	</parent>
 	<groupId>au.gov.qld.bdm.documentproduction</groupId>
 	<artifactId>document-production-app</artifactId>
@@ -19,7 +19,7 @@
 		<java.version>1.8</java.version>
 		<spring-cloud.version>Hoxton.SR9</spring-cloud.version>
 		<aws.sdk.version>1.12.242</aws.sdk.version>
-		<mockito.version>3.5.10</mockito.version>
+		<mockito.version>4.6.1</mockito.version>
 		<hamcrest.version>2.2</hamcrest.version>
 		<nanohttpd.version>2.3.1</nanohttpd.version>
 		<log4j2.version>2.17.2</log4j2.version>
@@ -280,6 +280,7 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
+			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
