@@ -1,6 +1,6 @@
 # Document Production
-[![app-build](https://github.com/qld-gov-au/documentproduction/actions/workflows/java.yml/badge.svg)](https://github.com/qld-gov-au/documentproduction/actions/workflows/java.yml)
-[![app-build](https://github.com/qld-gov-au/documentproduction/actions/workflows/nodejs.yml/badge.svg)](https://github.com/qld-gov-au/documentproduction/actions/workflows/nodejs.yml)
+[![app-build](https://github.com/djag-qld/documentproduction/actions/workflows/java.yml/badge.svg)](https://github.com/djag-qld/documentproduction/actions/workflows/java.yml)
+[![app-build](https://github.com/djag-qld/documentproduction/actions/workflows/nodejs.yml/badge.svg)](https://github.com/djag-qld/documentproduction/actions/workflows/nodejs.yml)
 
 This service is used to sign PDFs with digital signatures.
 The service also produces documents from templates which can include signed QR codes that are used to validate the integrity of digital and printed documents.
@@ -20,7 +20,7 @@ This service is designed to be reusable through agency data segregation.
 * Auditing of administration access, changes, signatures applied and documents produced
 
 ## Architecture
-![Architecture](https://github.com/qld-gov-au/documentproduction/raw/main/arch.png)
+![Architecture](https://github.com/djag-qld/documentproduction/raw/main/arch.png)
 
 ### Technology stack
 | Application | Infrastructure |
