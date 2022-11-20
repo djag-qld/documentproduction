@@ -213,4 +213,3 @@ The signature is created against the JSON format of all fields and metadata abou
 openssl dgst -sha256 -verify pub.pem -signature sig data
 ```
 You should get a message: Verified OK
-
