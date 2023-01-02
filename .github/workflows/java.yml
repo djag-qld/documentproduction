@@ -21,7 +21,7 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots verify
+        run: mvn -q --batch-mode --update-snapshots verify
         working-directory: ./app
       - run: mkdir staging && cp app/target/*.jar staging
       - uses: actions/upload-artifact@v2
