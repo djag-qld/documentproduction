@@ -23,8 +23,3 @@ jobs:
       - name: Build with Maven
         run: mvn -q --batch-mode --update-snapshots verify
         working-directory: ./app
-      - run: mkdir staging && cp app/target/*.jar staging
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Package
-          path: staging
