@@ -22,7 +22,7 @@
 		<mockito.version>5.1.1</mockito.version>
 		<hamcrest.version>2.2</hamcrest.version>
 		<nanohttpd.version>2.3.1</nanohttpd.version>
-		<log4j2.version>2.19.0</log4j2.version>
+		<log4j2.version>2.20.0</log4j2.version>
 	</properties>
 	<repositories>
 		<repository>
